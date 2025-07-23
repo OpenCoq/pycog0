@@ -13,7 +13,7 @@ jobs:
         curl -s https://api.github.com/orgs/opencog/repos?per_page=100 | jq -r '.[].name' > repo_list.txt
 
     - name: Upload repo_list.txt
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: repo_list
         path: repo_list.txt

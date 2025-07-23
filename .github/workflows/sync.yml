@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Checkout central repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -23,22 +23,29 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+    - name: Determine branch name
+      id: determine-branch
+      run: |
+        BASE_BRANCH="${{ inputs.org_name }}"
+        BRANCH="$BASE_BRANCH"
+        VERSION=1
+        while git ls-remote --exit-code --heads origin "$BRANCH"; do
+          VERSION=$((VERSION + 1))
+          BRANCH="${BASE_BRANCH}-v${VERSION}"
+        done
+        echo "BRANCH_NAME=$BRANCH" >> $GITHUB_ENV
+        echo "Determined branch name: $BRANCH"
+
     - name: Create or switch to branch
       run: |
-        if git ls-remote --exit-code --heads origin ${{ inputs.org_name }}; then
-          git fetch origin ${{ inputs.org_name }}:${{ inputs.org_name }}
-          git checkout ${{ inputs.org_name }}
-          git pull origin ${{ inputs.org_name }}
-        else
-          git checkout -b ${{ inputs.org_name }}
-        fi
+        git checkout -b $BRANCH_NAME
 
     - name: Clean untracked files
       run: |
         git clean -fdx
 
     - name: Download repo_list.txt
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4
       with:
         name: repo_list
 
@@ -89,4 +96,4 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-        git push "https://${{ secrets.GITHUB_TOKEN }}@github.com/ZoneCog/opencog-central.git" ${{ inputs.org_name }}
+        git push "https://${{ secrets.GITHUB_TOKEN }}@github.com/OpenCoq/opencog-org.git" $BRANCH_NAME
