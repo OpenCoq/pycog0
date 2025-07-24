@@ -67,7 +67,7 @@ jobs:
             echo "🤖 Activating self-healing system..."
 
             # Use our auto-fix script to attempt repairs
-            cd /home/runner/work/cogmo/cogmo
+            cd /home/runner/work/opencog-org/opencog-org
             python3 scripts/auto_fix.py \
               --build-cmd "python3 -m cython --cplus atomspace/opencog/cython/opencog/atom.pyx" \
               --max-attempts 2 \
@@ -230,10 +230,10 @@ jobs:
             # Check if auto-fix is enabled and available
             if [ "$COGML_AUTO_FIX_ENABLED" = "true" ] && [ -f "../../scripts/auto_fix.py" ]; then
               echo "🤖 Running self-healing auto-fix system..."
-              cd ../../..
+              cd /home/runner/work/opencog-org/opencog-org
 
               python3 scripts/auto_fix.py \
-                --build-cmd bash -c "cd atomspace/build && make -j$(nproc)" \
+                --build-cmd "cd atomspace/build && make -j$(nproc)" \
                 --max-attempts $COGML_MAX_FIX_ATTEMPTS \
                 --repo-root .
 

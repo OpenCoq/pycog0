@@ -18,6 +18,11 @@ include(cmake/Summary.cmake)
 # add_compile_definitions shows up in CMake version 3.12
 CMAKE_MINIMUM_REQUIRED(VERSION 3.12)
 
+# Fix for modern CMake Boost module policy
+IF(CMAKE_VERSION VERSION_GREATER_EQUAL 3.30)
+    CMAKE_POLICY(SET CMP0167 OLD)
+ENDIF()
+
 PROJECT(cogutil)
 
 # Uncomment to be in Release mode [default].
