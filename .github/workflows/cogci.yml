@@ -106,10 +106,9 @@ jobs:
           find ci_artifacts/ -type f 2>/dev/null || echo "No artifacts generated"
 
   # ==== Matrix-based OpenCog Core Build (Reference Implementation) ====
-  # This job demonstrates the matrix approach outlined in the issue requirements
-  # Currently disabled but can be enabled for external repo building
+  # Currently disabled but can be enabled for external repo testing
   opencog-matrix:
-    if: true  # Disabled by default - enable for external repo testing
+    if: false  # Disabled by default - enable for external repo testing
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -260,6 +259,9 @@ jobs:
           cd atomspace/build
           sudo make install
           sudo ldconfig
+          
+          # Create consistent CMake config files
+          sudo python3 ../../scripts/create_cmake_configs.py
 
       - name: Cache atomspace build
         uses: actions/cache@v4
@@ -3979,7 +3981,7 @@ jobs:
               asmoses: '${{ needs.asmoses.result }}',
               cogserver: '${{ needs.cogserver.result }}',
               learn: '${{ needs.learn.result }}',
-              'opencog-central': '${{ needs.opencog-central.result }}'
+              'opencog': '${{ needs.opencog.result }}'
             };
 
             const failedJobs = Object.entries(jobResults)
