@@ -2005,8 +2005,7 @@ jobs:
   # ==== Learning ====
   learn:
     runs-on: ubuntu-latest
-    needs: [atomspace-rocks]
-    needs: [pln, miner, asmoses]
+    needs: [atomspace-rocks, pln, miner, asmoses]
     steps:
       - uses: actions/checkout@v4
 
