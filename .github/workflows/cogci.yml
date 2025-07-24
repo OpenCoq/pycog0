@@ -259,6 +259,9 @@ jobs:
           cd atomspace/build
           sudo make install
           sudo ldconfig
+          
+          # Create consistent CMake config files
+          sudo python3 ../../scripts/create_cmake_configs.py
 
       - name: Cache atomspace build
         uses: actions/cache@v4
