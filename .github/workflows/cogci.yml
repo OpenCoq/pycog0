@@ -57,7 +57,7 @@ jobs:
           echo "🔧 Demonstrating auto-fix on real Cython compilation..."
 
           # Try to compile a known problematic Cython file
-          cd orc-as/atomspace/opencog/cython/opencog
+          cd atomspace/opencog/cython/opencog
 
           # First attempt - this will likely fail
           if python3 -m cython --cplus atom.pyx 2>&1 | tee /tmp/cython_build.log; then
@@ -69,7 +69,7 @@ jobs:
             # Use our auto-fix script to attempt repairs
             cd /home/runner/work/cogmo/cogmo
             python3 scripts/auto_fix.py \
-              --build-cmd "python3 -m cython --cplus orc-as/atomspace/opencog/cython/opencog/atom.pyx" \
+              --build-cmd "python3 -m cython --cplus atomspace/opencog/cython/opencog/atom.pyx" \
               --max-attempts 2 \
               --repo-root .
           fi
@@ -163,26 +163,26 @@ jobs:
 
       - name: Build cogutil
         run: |
-          cd orc-dv/cogutil
+          cd cogutil
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
 
       - name: Test cogutil
         run: |
-          cd orc-dv/cogutil/build
+          cd cogutil/build
           make test || true
 
       - name: Install cogutil
         run: |
-          cd orc-dv/cogutil/build
+          cd cogutil/build
           sudo make install
           sudo ldconfig
 
       - name: Cache cogutil build
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
 
   # ==== Core AtomSpace ====
@@ -202,18 +202,18 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
 
       - name: Install cogutil
         run: |
-          cd orc-dv/cogutil/build
+          cd cogutil/build
           sudo make install
           sudo ldconfig
 
       - name: Build AtomSpace with Self-Healing
         run: |
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -233,7 +233,7 @@ jobs:
               cd ../../..
 
               python3 scripts/auto_fix.py \
-                --build-cmd bash -c "cd orc-as/atomspace/build && make -j$(nproc)" \
+                --build-cmd bash -c "cd atomspace/build && make -j$(nproc)" \
                 --max-attempts $COGML_MAX_FIX_ATTEMPTS \
                 --repo-root .
 
@@ -252,19 +252,19 @@ jobs:
 
       - name: Test AtomSpace
         run: |
-          cd orc-as/atomspace/build
+          cd atomspace/build
           make test || true
 
       - name: Install AtomSpace
         run: |
-          cd orc-as/atomspace/build
+          cd atomspace/build
           sudo make install
           sudo ldconfig
 
       - name: Cache atomspace build
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
 
   atomspace-rocks:
@@ -287,7 +287,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -295,7 +295,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -303,7 +303,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -316,7 +316,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -405,7 +405,7 @@ jobs:
 
       - name: Build AtomSpace Rocks
         run: |
-          cd orc-as/atomspace-rocks
+          cd atomspace-rocks
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -417,12 +417,12 @@ jobs:
 
       - name: Test AtomSpace Rocks
         run: |
-          cd orc-as/atomspace-rocks/build
+          cd atomspace-rocks/build
           make test || true
 
       - name: Install AtomSpace Rocks
         run: |
-          cd orc-as/atomspace-rocks/build
+          cd atomspace-rocks/build
           sudo make install
           sudo ldconfig
 
@@ -518,7 +518,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -526,7 +526,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -534,7 +534,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -547,7 +547,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -636,7 +636,7 @@ jobs:
 
       - name: Build AtomSpace RESTful
         run: |
-          cd orc-as/atomspace-restful
+          cd atomspace-restful
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -648,7 +648,7 @@ jobs:
 
       - name: Test AtomSpace RESTful
         run: |
-          cd orc-as/atomspace-restful/build
+          cd atomspace-restful/build
           make test || true
 
   # ==== Logic ====
@@ -672,7 +672,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -680,7 +680,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -688,7 +688,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -701,7 +701,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -800,26 +800,26 @@ jobs:
 
       - name: Build URE
         run: |
-          cd orc-ai/ure
+          cd ure
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3)
           make -j$(nproc)
 
       - name: Test URE
         run: |
-          cd orc-ai/ure/build
+          cd ure/build
           make test || true
 
       - name: Install URE
         run: |
-          cd orc-ai/ure/build
+          cd ure/build
           sudo make install
           sudo ldconfig
 
       - name: Cache ure build
         uses: actions/cache@v4
         with:
-          path: orc-ai/ure/build
+          path: ure/build
           key: ure-${{ runner.os }}-${{ github.sha }}
 
   # ==== Advanced ====
@@ -843,7 +843,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -851,7 +851,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -859,7 +859,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -872,7 +872,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -972,7 +972,7 @@ jobs:
       - name: Build and install URE
         run: |
           # Always rebuild and install URE to ensure consistency
-          cd orc-ai/ure
+          cd ure
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -1050,7 +1050,7 @@ jobs:
       - name: Build and install SpaceTime
         run: |
           # Always rebuild and install SpaceTime to ensure consistency
-          cd orc-ct/spacetime
+          cd spacetime
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -1139,14 +1139,14 @@ jobs:
 
       - name: Build PLN
         run: |
-          cd orc-ai/pln
+          cd pln
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
 
       - name: Test PLN
         run: |
-          cd orc-ai/pln/build
+          cd pln/build
           make test || true
 
   miner:
@@ -1169,7 +1169,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -1177,7 +1177,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -1185,7 +1185,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -1198,7 +1198,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -1298,7 +1298,7 @@ jobs:
       - name: Build and install URE
         run: |
           # Always rebuild and install URE to ensure consistency
-          cd orc-ai/ure
+          cd ure
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -1376,7 +1376,7 @@ jobs:
       - name: Build and install SpaceTime
         run: |
           # Always rebuild and install SpaceTime to ensure consistency
-          cd orc-ct/spacetime
+          cd spacetime
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -1465,14 +1465,14 @@ jobs:
 
       - name: Build Miner
         run: |
-          cd orc-ai/miner
+          cd miner
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
 
       - name: Test Miner
         run: |
-          cd orc-ai/miner/build
+          cd miner/build
           make test || true
 
   moses:
@@ -1489,7 +1489,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -1497,7 +1497,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -1509,14 +1509,14 @@ jobs:
 
       - name: Build MOSES
         run: |
-          cd orc-ai/moses
+          cd moses
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
 
       - name: Test MOSES
         run: |
-          cd orc-ai/moses/build
+          cd moses/build
           make test || true
 
   asmoses:
@@ -1539,7 +1539,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -1547,7 +1547,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -1555,7 +1555,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -1568,7 +1568,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -1668,7 +1668,7 @@ jobs:
       - name: Build and install URE
         run: |
           # Always rebuild and install URE to ensure consistency
-          cd orc-ai/ure
+          cd ure
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -1746,7 +1746,7 @@ jobs:
       - name: Build and install SpaceTime
         run: |
           # Always rebuild and install SpaceTime to ensure consistency
-          cd orc-ct/spacetime
+          cd spacetime
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -1835,14 +1835,14 @@ jobs:
 
       - name: Build Asmoses
         run: |
-          cd orc-ai/asmoses
+          cd asmoses
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
 
       - name: Test Asmoses
         run: |
-          cd orc-ai/asmoses/build
+          cd asmoses/build
           make test || true
 
   # ==== Server Infrastructure ====
@@ -1866,7 +1866,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -1874,7 +1874,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -1882,7 +1882,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -1895,7 +1895,7 @@ jobs:
       - name: Build and install atomspace  
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -1984,7 +1984,7 @@ jobs:
           
       - name: Build and install cogserver
         run: |
-          cd orc-sv/cogserver
+          cd cogserver
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
@@ -1993,13 +1993,13 @@ jobs:
           
       - name: Test cogserver
         run: |
-          cd orc-sv/cogserver/build
+          cd cogserver/build
           make test || true
 
       - name: Cache cogserver build
         uses: actions/cache@v4
         with:
-          path: orc-sv/cogserver/build
+          path: cogserver/build
           key: cogserver-${{ runner.os }}-${{ github.sha }}
 
   # ==== Learning ====
@@ -2024,7 +2024,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -2032,7 +2032,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -2040,7 +2040,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -2053,7 +2053,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -2142,7 +2142,7 @@ jobs:
 
       - name: Build AtomSpace Rocks
         run: |
-          cd orc-as/atomspace-rocks
+          cd atomspace-rocks
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -2239,7 +2239,7 @@ jobs:
       - name: Build and install URE
         run: |
           # Always rebuild and install URE to ensure consistency
-          cd orc-ai/ure
+          cd ure
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -2317,7 +2317,7 @@ jobs:
       - name: Build and install cogserver
         run: |
           # Always rebuild and install cogserver to ensure consistency
-          cd orc-sv/cogserver
+          cd cogserver
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -2408,14 +2408,14 @@ jobs:
 
       - name: Build Learn
         run: |
-          cd orc-ai/learn
+          cd learn
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release
           make -j$(nproc)
 
       - name: Test Learn
         run: |
-          cd orc-ai/learn/build
+          cd learn/build
           make test || true
 
   # ==== Cognitive Systems ====
@@ -2439,7 +2439,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -2447,7 +2447,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -2455,7 +2455,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -2468,7 +2468,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -2558,7 +2558,7 @@ jobs:
       - name: Build and install cogserver
         run: |
           # Always rebuild and install cogserver to ensure consistency
-          cd orc-sv/cogserver
+          cd cogserver
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -2649,19 +2649,19 @@ jobs:
 
       - name: Build Attention
         run: |
-          cd orc-ct/attention
+          cd attention
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3)
           make -j$(nproc)
 
       - name: Test Attention
         run: |
-          cd orc-ct/attention/build
+          cd attention/build
           make test || true
 
       - name: Install Attention
         run: |
-          cd orc-ct/attention/build
+          cd attention/build
           sudo make install
           sudo ldconfig
 
@@ -2758,7 +2758,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -2766,7 +2766,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -2774,7 +2774,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -2787,7 +2787,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -2876,19 +2876,19 @@ jobs:
 
       - name: Build LG-Atomese
         run: |
-          cd orc-nl/lg-atomese
+          cd lg-atomese
           mkdir -p build && cd build
           cmake .. -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3)
           make -j$(nproc)
 
       - name: Test LG-Atomese
         run: |
-          cd orc-nl/lg-atomese/build
+          cd lg-atomese/build
           make test || true
 
       - name: Install LG-Atomese
         run: |
-          cd orc-nl/lg-atomese/build
+          cd lg-atomese/build
           sudo make install
           sudo ldconfig
 
@@ -2983,7 +2983,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -2991,7 +2991,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -2999,7 +2999,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -3011,7 +3011,7 @@ jobs:
 
       - name: Test Language Learning
         run: |
-          cd orc-nl/language-learning
+          cd language-learning
           # Run basic tests if available
           if [ -f "run-tests.sh" ]; then
             chmod +x run-tests.sh
@@ -3022,7 +3022,7 @@ jobs:
 
       - name: Install Language Learning
         run: |
-          cd orc-nl/language-learning
+          cd language-learning
           # Install Python modules if setup.py exists
           if [ -f "setup.py" ]; then
             sudo python3 setup.py install
@@ -3107,7 +3107,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -3115,7 +3115,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -3123,7 +3123,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -3136,7 +3136,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -3225,7 +3225,7 @@ jobs:
 
       - name: Build ROS Behavior Scripting
         run: |
-          cd orc-ro/ros-behavior-scripting
+          cd ros-behavior-scripting
           # Install Guile modules without full ROS dependency
           mkdir -p build && cd build
           # Try to build with minimal configuration, allowing failures
@@ -3284,7 +3284,7 @@ jobs:
 
       - name: Test ROS Behavior Scripting
         run: |
-          cd orc-ro/ros-behavior-scripting
+          cd ros-behavior-scripting
           # Basic validation that modules are installed
           if [ -d "/usr/local/share/opencog/ros-behavior-scripting" ]; then
             echo "ROS Behavior Scripting modules installed successfully"
@@ -3314,7 +3314,7 @@ jobs:
       - name: Restore cogutil cache
         uses: actions/cache@v4
         with:
-          path: orc-dv/cogutil/build
+          path: cogutil/build
           key: cogutil-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             cogutil-${{ runner.os }}-
@@ -3322,7 +3322,7 @@ jobs:
       - name: Restore atomspace cache
         uses: actions/cache@v4
         with:
-          path: orc-as/atomspace/build
+          path: atomspace/build
           key: atomspace-${{ runner.os }}-${{ github.sha }}
           restore-keys: |
             atomspace-${{ runner.os }}-
@@ -3330,7 +3330,7 @@ jobs:
       - name: Build and install cogutil
         run: |
           # Always rebuild and install cogutil to ensure consistency
-          cd orc-dv/cogutil
+          cd cogutil
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -3343,7 +3343,7 @@ jobs:
       - name: Build and install atomspace
         run: |
           # Always rebuild and install atomspace to ensure consistency
-          cd orc-as/atomspace
+          cd atomspace
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -3432,7 +3432,7 @@ jobs:
 
       - name: Build AtomSpace Rocks
         run: |
-          cd orc-as/atomspace-rocks
+          cd atomspace-rocks
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -3529,7 +3529,7 @@ jobs:
       - name: Build and install URE
         run: |
           # Always rebuild and install URE to ensure consistency
-          cd orc-ai/ure
+          cd ure
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -3607,7 +3607,7 @@ jobs:
       - name: Build and install SpaceTime
         run: |
           # Always rebuild and install SpaceTime to ensure consistency
-          cd orc-ct/spacetime
+          cd spacetime
           # Create missing lib directory if it doesn't exist
           if [ ! -d "lib" ]; then
             mkdir -p lib
@@ -3684,7 +3684,7 @@ jobs:
       - name: Build and install cogserver
         run: |
           # Always rebuild and install cogserver to ensure consistency
-          cd orc-sv/cogserver
+          cd cogserver
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
@@ -3776,7 +3776,7 @@ jobs:
       - name: Build and install Learn
         run: |
           # Always rebuild and install learn to ensure consistency
-          cd orc-ai/learn
+          cd learn
           if [ ! -d "build" ]; then
             mkdir -p build
           fi
