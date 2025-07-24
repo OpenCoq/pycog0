@@ -22,7 +22,7 @@ jobs:
   # ==== Self-Healing CI Demonstration ====
   # This job demonstrates the autonomous error detection and fix capability
   self-healing-demo:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
@@ -110,7 +110,7 @@ jobs:
   # Currently disabled but can be enabled for external repo building
   opencog-matrix:
     if: false  # Disabled by default - enable for external repo testing
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         repo:
@@ -150,7 +150,7 @@ jobs:
   # Note: Matrix-based approach implemented above (opencog-matrix job)
   # Current implementation uses local repository structure for reliability
   cogutil:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
@@ -187,7 +187,7 @@ jobs:
 
   # ==== Core AtomSpace ====
   atomspace:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [cogutil]
     steps:
       - uses: actions/checkout@v4
@@ -268,7 +268,7 @@ jobs:
           key: atomspace-${{ runner.os }}-${{ github.sha }}
 
   atomspace-rocks:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace]
     steps:
       - uses: actions/checkout@v4
@@ -499,7 +499,7 @@ jobs:
           EOF
 
   atomspace-restful:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace]
     steps:
       - uses: actions/checkout@v4
@@ -653,7 +653,7 @@ jobs:
 
   # ==== Logic ====
   ure:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace]
     steps:
       - uses: actions/checkout@v4
@@ -824,7 +824,7 @@ jobs:
 
   # ==== Advanced ====
   pln:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [ure]
     steps:
       - uses: actions/checkout@v4
@@ -1150,7 +1150,7 @@ jobs:
           make test || true
 
   miner:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [ure]
     steps:
       - uses: actions/checkout@v4
@@ -1476,7 +1476,7 @@ jobs:
           make test || true
 
   moses:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [cogutil]
     steps:
       - uses: actions/checkout@v4
@@ -1520,7 +1520,7 @@ jobs:
           make test || true
 
   asmoses:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [ure]
     steps:
       - uses: actions/checkout@v4
@@ -1847,7 +1847,7 @@ jobs:
 
   # ==== Server Infrastructure ====
   cogserver:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace]
     steps:
       - uses: actions/checkout@v4
@@ -2004,7 +2004,7 @@ jobs:
 
   # ==== Learning ====
   learn:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace-rocks]
 #    needs: [pln, miner, asmoses]
     steps:
@@ -2420,7 +2420,7 @@ jobs:
 
   # ==== Cognitive Systems ====
   attention:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace]
     steps:
       - uses: actions/checkout@v4
@@ -2739,7 +2739,7 @@ jobs:
 
   # ==== Language Processing ====
   lg-atomese:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace]
     steps:
       - uses: actions/checkout@v4
@@ -2965,7 +2965,7 @@ jobs:
           EOF
 
   language-learning:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace]
     steps:
       - uses: actions/checkout@v4
@@ -3088,7 +3088,7 @@ jobs:
 
   # ==== Robotics ====
   ros-behavior-scripting:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [atomspace]
     steps:
       - uses: actions/checkout@v4
@@ -3295,7 +3295,7 @@ jobs:
 
   # ==== Integration ====
   opencog:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
 #    needs: [learn, atomspace-rocks, atomspace-restful, moses, attention, lg-atomese]
     steps:
       - uses: actions/checkout@v4
@@ -3871,7 +3871,7 @@ jobs:
 
   # ==== Packaging ====
   opencog-debian:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [opencog]
     if: github.ref == 'refs/heads/main'
     steps:
@@ -3892,7 +3892,7 @@ jobs:
 
   # ==== Documentation Generation ====
   generate-docs:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     needs: [opencog]
     steps:
       - uses: actions/checkout@v4
@@ -3920,7 +3920,7 @@ jobs:
 
   # ==== Build Failure Handling ====
   create-build-failure-issue:
-    runs-on: ubuntu-2404
+    runs-on: ubuntu-latest
     if: failure() && (github.event_name == 'push' || github.event_name == 'pull_request')
     needs: [cogutil, atomspace, atomspace-rocks, atomspace-restful, ure, pln, miner, moses, asmoses, cogserver, learn, opencog]
     permissions:
