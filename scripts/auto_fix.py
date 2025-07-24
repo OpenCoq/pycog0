@@ -99,6 +99,46 @@ class BuildAutoFixer:
             except Exception as e:
                 logger.error(f"Error updating {cmake_file}: {e}")
     
+    def fix_cmake_config_files(self):
+        """Create missing CMake config files for dependencies."""
+        logger.info("Creating missing CMake config files...")
+        
+        # Use the dedicated script to create consistent config files
+        config_script = self.repo_root / "scripts/create_cmake_configs.py"
+        if config_script.exists():
+            logger.info("Running CMake config creation script...")
+            result = self.run_command(f"python3 {config_script}")
+            if result and result.returncode == 0:
+                logger.info("CMake config files created successfully")
+            else:
+                logger.warning("CMake config creation script failed")
+        else:
+            logger.warning("CMake config creation script not found, skipping")
+    
+    def fix_cython_warnings(self):
+        """Fix Cython warning about nogil keyword placement."""
+        logger.info("Fixing Cython nogil keyword warnings...")
+        
+        # Find .pxd files that might have nogil warnings
+        pxd_files = list(self.repo_root.glob("**/*.pxd"))
+        
+        for pxd_file in pxd_files:
+            try:
+                content = pxd_file.read_text()
+                
+                # Fix nogil except + pattern
+                if "nogil except +" in content:
+                    logger.info(f"Fixing nogil keyword placement in {pxd_file}")
+                    
+                    # Replace nogil except + with except + nogil
+                    fixed_content = content.replace("nogil except +", "except + nogil")
+                    pxd_file.write_text(fixed_content)
+                    
+                    logger.info(f"Fixed nogil warnings in {pxd_file}")
+                    
+            except Exception as e:
+                logger.error(f"Error fixing Cython file {pxd_file}: {e}")
+    
     def fix_missing_directories(self):
         """Create missing directories that the build expects."""
         logger.info("Creating missing directories...")
@@ -132,10 +172,12 @@ class BuildAutoFixer:
             # First attempt: Fix dependencies and missing directories
             self.check_dependencies()
             self.fix_missing_directories()
+            self.fix_cython_warnings()
             
         elif attempt_num == 2:
-            # Second attempt: Fix CMake policies
+            # Second attempt: Fix CMake policies and config files
             self.fix_cmake_policy_warnings()
+            self.fix_cmake_config_files()
             
         elif attempt_num == 3:
             # Third attempt: Clean build
@@ -163,8 +205,10 @@ class BuildAutoFixer:
             "timestamp": subprocess.check_output(["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"]).decode().strip(),
             "fixes_applied": [
                 "Dependencies checked",
-                "Missing directories created",
+                "Missing directories created", 
+                "Cython warnings fixed",
                 "CMake policies updated" if attempt_num >= 2 else None,
+                "CMake config files created" if attempt_num >= 2 else None,
                 "Clean build performed" if attempt_num >= 3 else None
             ]
         }
