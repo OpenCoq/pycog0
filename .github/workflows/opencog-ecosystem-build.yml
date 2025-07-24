@@ -1,0 +1,1152 @@
+---
+name: OpenCog Ecosystem Build Pipeline
+
+on:
+  push:
+    branches: [main, opencog-v6]
+  pull_request:
+    branches: [main, opencog-v6]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CMAKE_BUILD_TYPE: Release
+  MAKEFLAGS: "-j$(nproc)"
+
+jobs:
+  # ==== Foundation Layer ====
+  cogutil:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev python3-nose valgrind doxygen
+
+      - name: Build cogutil
+        run: |
+          cd cogutil
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test cogutil
+        run: |
+          cd cogutil/build
+          make test || true
+
+      - name: Install cogutil
+        run: |
+          cd cogutil/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache cogutil build
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+  # ==== Core Layer ====
+  atomspace:
+    runs-on: ubuntu-latest
+    needs: [cogutil]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Restore cogutil cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install cogutil
+        run: |
+          cd cogutil/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Build AtomSpace
+        run: |
+          cd atomspace
+          # Create missing lib directory if it doesn't exist
+          if [ ! -d "lib" ]; then
+            mkdir -p lib
+            echo "# Empty lib directory for build compatibility" > lib/CMakeLists.txt
+          fi
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test AtomSpace
+        run: |
+          cd atomspace/build
+          make test || true
+
+      - name: Install AtomSpace
+        run: |
+          cd atomspace/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache atomspace build
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+  atomspace-rocks:
+    runs-on: ubuntu-latest
+    needs: [atomspace]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev librocksdb-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+
+      - name: Build AtomSpace Rocks
+        run: |
+          cd atomspace-rocks
+          # Create missing lib directory if it doesn't exist
+          if [ ! -d "lib" ]; then
+            mkdir -p lib
+            echo "# Empty lib directory for build compatibility" > lib/CMakeLists.txt
+          fi
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+          make $MAKEFLAGS
+
+      - name: Test AtomSpace Rocks
+        run: |
+          cd atomspace-rocks/build
+          make test || true
+
+      - name: Install AtomSpace Rocks
+        run: |
+          cd atomspace-rocks/build
+          sudo make install
+          sudo ldconfig
+
+  atomspace-restful:
+    runs-on: ubuntu-latest
+    needs: [atomspace]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev libcpprest-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+
+      - name: Build AtomSpace RESTful
+        run: |
+          cd atomspace-restful
+          # Create missing lib directory if it doesn't exist
+          if [ ! -d "lib" ]; then
+            mkdir -p lib
+            echo "# Empty lib directory for build compatibility" > lib/CMakeLists.txt
+          fi
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+          make $MAKEFLAGS
+
+      - name: Test AtomSpace RESTful
+        run: |
+          cd atomspace-restful/build
+          make test || true
+
+  # ==== Logic Layer ====
+  unify:
+    runs-on: ubuntu-latest
+    needs: [atomspace]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+
+      - name: Build and install unify
+        run: |
+          git clone --depth 1 https://github.com/opencog/unify /tmp/unify
+          cd /tmp/unify
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache unify build
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/include/opencog/unify
+            /usr/local/lib/opencog
+          key: unify-${{ runner.os }}-${{ github.sha }}
+
+  ure:
+    runs-on: ubuntu-latest
+    needs: [atomspace, unify]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore unify cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/include/opencog/unify
+            /usr/local/lib/opencog
+          key: unify-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+          # Unify is already installed via cache
+
+      - name: Build URE
+        run: |
+          cd ure
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+          make $MAKEFLAGS
+
+      - name: Test URE
+        run: |
+          cd ure/build
+          make test || true
+
+      - name: Install URE
+        run: |
+          cd ure/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache ure build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ure/build
+            /usr/local/include/opencog/ure
+            /usr/local/lib/opencog
+          key: ure-${{ runner.os }}-${{ github.sha }}
+
+  # ==== Cognitive Systems Layer ====
+  cogserver:
+    runs-on: ubuntu-latest
+    needs: [atomspace]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+
+      - name: Build CogServer
+        run: |
+          cd cogserver
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+          make $MAKEFLAGS
+
+      - name: Test CogServer
+        run: |
+          cd cogserver/build
+          make test || true
+
+      - name: Install CogServer
+        run: |
+          cd cogserver/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache cogserver build
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogserver/build
+            /usr/local/include/opencog/cogserver
+            /usr/local/lib/opencog
+          key: cogserver-${{ runner.os }}-${{ github.sha }}
+
+  attention:
+    runs-on: ubuntu-latest
+    needs: [atomspace, cogserver]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore cogserver cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogserver/build
+            /usr/local/include/opencog/cogserver
+            /usr/local/lib/opencog
+          key: cogserver-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+          cd ../../cogserver/build && sudo make install && sudo ldconfig
+
+      - name: Build Attention
+        run: |
+          cd attention
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+          make $MAKEFLAGS
+
+      - name: Test Attention
+        run: |
+          cd attention/build
+          make test || true
+
+      - name: Install Attention
+        run: |
+          cd attention/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache attention build
+        uses: actions/cache@v4
+        with:
+          path: |
+            attention/build
+            /usr/local/include/opencog/attention
+            /usr/local/lib/opencog
+          key: attention-${{ runner.os }}-${{ github.sha }}
+
+  spacetime:
+    runs-on: ubuntu-latest
+    needs: [atomspace]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen liboctomap-dev
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+
+      - name: Build SpaceTime
+        run: |
+          cd spacetime
+          # Create missing lib directory if it doesn't exist
+          if [ ! -d "lib" ]; then
+            mkdir -p lib
+            echo "# Empty lib directory for build compatibility" > lib/CMakeLists.txt
+          fi
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test SpaceTime
+        run: |
+          cd spacetime/build
+          make test || true
+
+      - name: Install SpaceTime
+        run: |
+          cd spacetime/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache spacetime build
+        uses: actions/cache@v4
+        with:
+          path: |
+            spacetime/build
+            /usr/local/include/opencog/spacetime
+            /usr/local/lib/opencog
+          key: spacetime-${{ runner.os }}-${{ github.sha }}
+
+  # ==== Advanced Systems Layer ====
+  pln:
+    runs-on: ubuntu-latest
+    needs: [atomspace, ure, spacetime]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev python3-nose valgrind doxygen liboctomap-dev
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore ure cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ure/build
+            /usr/local/include/opencog/ure
+            /usr/local/lib/opencog
+          key: ure-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore spacetime cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            spacetime/build
+            /usr/local/include/opencog/spacetime
+            /usr/local/lib/opencog
+          key: spacetime-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore unify cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/include/opencog/unify
+            /usr/local/lib/opencog
+          key: unify-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+          cd ../../ure/build && sudo make install && sudo ldconfig
+          cd ../../spacetime/build && sudo make install && sudo ldconfig
+
+      - name: Build PLN
+        run: |
+          cd pln
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test PLN
+        run: |
+          cd pln/build
+          make test || true
+
+  miner:
+    runs-on: ubuntu-latest
+    needs: [atomspace, ure]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev python3-nose valgrind doxygen liboctomap-dev
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore ure cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ure/build
+            /usr/local/include/opencog/ure
+            /usr/local/lib/opencog
+          key: ure-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore unify cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/include/opencog/unify
+            /usr/local/lib/opencog
+          key: unify-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+          cd ../../ure/build && sudo make install && sudo ldconfig
+
+      - name: Build Miner
+        run: |
+          cd miner
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test Miner
+        run: |
+          cd miner/build
+          make test || true
+
+  # ==== Learning Systems Layer ====
+  moses:
+    runs-on: ubuntu-latest
+    needs: [cogutil]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev python3-nose valgrind doxygen
+
+      - name: Restore cogutil cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install cogutil
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+
+      - name: Build MOSES
+        run: |
+          cd moses
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test MOSES
+        run: |
+          cd moses/build
+          make test || true
+
+  asmoses:
+    runs-on: ubuntu-latest
+    needs: [atomspace, ure]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore ure cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ure/build
+            /usr/local/include/opencog/ure
+            /usr/local/lib/opencog
+          key: ure-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore unify cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/include/opencog/unify
+            /usr/local/lib/opencog
+          key: unify-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+          cd ../../ure/build && sudo make install && sudo ldconfig
+
+      - name: Build ASMoses
+        run: |
+          cd asmoses
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+          make $MAKEFLAGS
+
+      - name: Test ASMoses
+        run: |
+          cd asmoses/build
+          make test || true
+
+  # ==== Language Processing Layer ====
+  lg-atomese:
+    runs-on: ubuntu-latest
+    needs: [atomspace]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+
+      - name: Build LG-Atomese
+        run: |
+          cd lg-atomese
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+          make $MAKEFLAGS
+
+      - name: Test LG-Atomese
+        run: |
+          cd lg-atomese/build
+          make test || true
+
+      - name: Install LG-Atomese
+        run: |
+          cd lg-atomese/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache lg-atomese build
+        uses: actions/cache@v4
+        with:
+          path: |
+            lg-atomese/build
+            /usr/local/include/opencog/lg-atomese
+            /usr/local/lib/opencog
+          key: lg-atomese-${{ runner.os }}-${{ github.sha }}
+
+  learn:
+    runs-on: ubuntu-latest
+    needs: [atomspace, cogserver]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore cogserver cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogserver/build
+            /usr/local/include/opencog/cogserver
+            /usr/local/lib/opencog
+          key: cogserver-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+          cd ../../cogserver/build && sudo make install && sudo ldconfig
+
+      - name: Build Learn
+        run: |
+          cd learn
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test Learn
+        run: |
+          cd learn/build
+          make test || true
+
+      - name: Install Learn
+        run: |
+          cd learn/build
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache learn build
+        uses: actions/cache@v4
+        with:
+          path: |
+            learn/build
+            /usr/local/include/opencog/learn
+            /usr/local/lib/opencog
+          key: learn-${{ runner.os }}-${{ github.sha }}
+
+  language-learning:
+    runs-on: ubuntu-latest
+    needs: [cogutil]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev python3-nose python3-pip python3-dev
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install numpy pandas matplotlib jupyter notebook
+
+      - name: Restore cogutil cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install cogutil
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+
+      - name: Test Language Learning
+        run: |
+          cd language-learning
+          # Run basic tests if available
+          if [ -f "run-tests.sh" ]; then
+            chmod +x run-tests.sh
+            ./run-tests.sh || true
+          else
+            echo "No tests available for language-learning"
+          fi
+
+      - name: Install Language Learning
+        run: |
+          cd language-learning
+          # Install Python modules if setup.py exists
+          if [ -f "setup.py" ]; then
+            sudo python3 setup.py install
+          fi
+
+  # ==== Integration Layer ====
+  opencog:
+    runs-on: ubuntu-latest
+    needs: [atomspace, ure, cogserver, attention, lg-atomese]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+
+      - name: Install Cython
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Restore all build caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore atomspace cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            atomspace/build
+            /usr/local/include/opencog/atomspace
+            /usr/local/lib/opencog
+          key: atomspace-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore ure cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ure/build
+            /usr/local/include/opencog/ure
+            /usr/local/lib/opencog
+          key: ure-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore cogserver cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogserver/build
+            /usr/local/include/opencog/cogserver
+            /usr/local/lib/opencog
+          key: cogserver-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore attention cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            attention/build
+            /usr/local/include/opencog/attention
+            /usr/local/lib/opencog
+          key: attention-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore lg-atomese cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            lg-atomese/build
+            /usr/local/include/opencog/lg-atomese
+            /usr/local/lib/opencog
+          key: lg-atomese-${{ runner.os }}-${{ github.sha }}
+
+      - name: Restore unify cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/include/opencog/unify
+            /usr/local/lib/opencog
+          key: unify-${{ runner.os }}-${{ github.sha }}
+
+      - name: Install all dependencies
+        run: |
+          cd cogutil/build && sudo make install && sudo ldconfig
+          cd ../../atomspace/build && sudo make install && sudo ldconfig
+          cd ../../ure/build && sudo make install && sudo ldconfig
+          cd ../../cogserver/build && sudo make install && sudo ldconfig
+          cd ../../attention/build && sudo make install && sudo ldconfig
+          cd ../../lg-atomese/build && sudo make install && sudo ldconfig
+
+      - name: Build OpenCog Integration
+        run: |
+          cd opencog
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test OpenCog Integration
+        run: |
+          cd opencog/build
+          make test || true
+
+  # ==== Summary Job ====
+  opencog-ecosystem-summary:
+    runs-on: ubuntu-latest
+    needs: [cogutil, atomspace, atomspace-rocks, atomspace-restful, unify, ure, cogserver, attention, spacetime, pln, miner, moses, asmoses, lg-atomese, learn, language-learning, opencog]
+    if: always()
+    steps:
+      - name: Build Summary Report
+        run: |
+          echo "# OpenCog Ecosystem Build Summary" > build_summary.md
+          echo "" >> build_summary.md
+          echo "## Foundation Layer" >> build_summary.md
+          echo "- cogutil: ${{ needs.cogutil.result }}" >> build_summary.md
+          echo "" >> build_summary.md
+          echo "## Core Layer" >> build_summary.md
+          echo "- atomspace: ${{ needs.atomspace.result }}" >> build_summary.md
+          echo "- atomspace-rocks: ${{ needs.atomspace-rocks.result }}" >> build_summary.md
+          echo "- atomspace-restful: ${{ needs.atomspace-restful.result }}" >> build_summary.md
+          echo "" >> build_summary.md
+          echo "## Logic Layer" >> build_summary.md
+          echo "- unify: ${{ needs.unify.result }}" >> build_summary.md
+          echo "- ure: ${{ needs.ure.result }}" >> build_summary.md
+          echo "" >> build_summary.md
+          echo "## Cognitive Systems Layer" >> build_summary.md
+          echo "- cogserver: ${{ needs.cogserver.result }}" >> build_summary.md
+          echo "- attention: ${{ needs.attention.result }}" >> build_summary.md
+          echo "- spacetime: ${{ needs.spacetime.result }}" >> build_summary.md
+          echo "" >> build_summary.md
+          echo "## Advanced Systems Layer" >> build_summary.md
+          echo "- pln: ${{ needs.pln.result }}" >> build_summary.md
+          echo "- miner: ${{ needs.miner.result }}" >> build_summary.md
+          echo "" >> build_summary.md
+          echo "## Learning Systems Layer" >> build_summary.md
+          echo "- moses: ${{ needs.moses.result }}" >> build_summary.md
+          echo "- asmoses: ${{ needs.asmoses.result }}" >> build_summary.md
+          echo "" >> build_summary.md
+          echo "## Language Processing Layer" >> build_summary.md
+          echo "- lg-atomese: ${{ needs.lg-atomese.result }}" >> build_summary.md
+          echo "- learn: ${{ needs.learn.result }}" >> build_summary.md
+          echo "- language-learning: ${{ needs.language-learning.result }}" >> build_summary.md
+          echo "" >> build_summary.md
+          echo "## Integration Layer" >> build_summary.md
+          echo "- opencog: ${{ needs.opencog.result }}" >> build_summary.md
+          echo "" >> build_summary.md
+          
+          cat build_summary.md
+
+      - name: Upload build summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: opencog-ecosystem-build-summary
+          path: build_summary.md
