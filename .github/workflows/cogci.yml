@@ -3,9 +3,9 @@ name: CogML CI Build (Self-Healing)
 
 "on":
   push:
-    branches: [main, opencog-v6]
+    branches: [main]
   pull_request:
-    branches: [main, opencog-v6]
+    branches: [main]
 
 permissions:
   contents: read
