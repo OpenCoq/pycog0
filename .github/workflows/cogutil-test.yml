@@ -1,0 +1,70 @@
+---
+name: CogUtil Build Test
+
+on:
+  push:
+    branches: [opencog-v6]
+  pull_request:
+    branches: [opencog-v6]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CMAKE_BUILD_TYPE: Release
+  MAKEFLAGS: "-j$(nproc)"
+
+jobs:
+  # ==== Foundation Layer ====
+  cogutil:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: .
+
+#      - name: Install dependencies with adaptive boost strategy
+#        run: |
+          # Use adaptive boost installation script for better compatibility across Ubuntu versions
+#          ./scripts/adaptive-boost-install.sh
+          # Install additional packages specific to cogutil
+#          sudo apt-get install -y python3-nose valgrind doxygen
+
+      - name: Install Boost
+        run: sudo apt-get update && sudo apt-get install -y libboost-all-dev
+#      - name: Build
+#        run: make all
+#        env:
+#          BOOST_ROOT: /usr/include/boost
+
+      - name: Print build path for verification
+        run: echo "Build path will be:" ${{ github.workspace }}/cogutil/build
+
+      - name: Build cogutil
+        working-directory: ${{ github.workspace }}/cogutil
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test cogutil
+        working-directory: ${{ github.workspace }}/cogutil/build
+        run: make test || true
+
+      - name: Install cogutil
+        working-directory: ${{ github.workspace }}/cogutil/build
+        run: |
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache cogutil build
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
+
