@@ -127,10 +127,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies with adaptive boost strategy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libboost-all-dev librocksdb-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+          # Use adaptive boost installation script for better compatibility across Ubuntu versions
+          ./scripts/adaptive-boost-install.sh
+          # Install additional packages specific to atomspace-rocks
+          sudo apt-get install -y librocksdb-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
 
       - name: Install Cython
         run: python3 -m pip install --upgrade pip cython
@@ -187,10 +189,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies with adaptive boost strategy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libboost-all-dev libcpprest-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+          # Use adaptive boost installation script for better compatibility across Ubuntu versions
+          ./scripts/adaptive-boost-install.sh
+          # Install additional packages specific to atomspace-restful
+          sudo apt-get install -y libcpprest-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
 
       - name: Install Cython
         run: python3 -m pip install --upgrade pip cython
@@ -294,10 +298,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies with adaptive boost strategy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+          # Use adaptive boost installation script for better compatibility across Ubuntu versions
+          ./scripts/adaptive-boost-install.sh
+          # Install additional packages specific to ure
+          sudo apt-get install -y guile-3.0-dev cython3 python3-nose valgrind doxygen
 
       - name: Install Cython
         run: python3 -m pip install --upgrade pip cython
@@ -368,10 +374,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies with adaptive boost strategy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+          # Use adaptive boost installation script for better compatibility across Ubuntu versions
+          ./scripts/adaptive-boost-install.sh
+          # Install additional packages specific to cogserver
+          sudo apt-get install -y guile-3.0-dev cython3 python3-nose valgrind doxygen
 
       - name: Install Cython
         run: python3 -m pip install --upgrade pip cython
@@ -721,10 +729,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies with adaptive boost strategy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libboost-all-dev python3-nose valgrind doxygen
+          # Use adaptive boost installation script for better compatibility across Ubuntu versions
+          ./scripts/adaptive-boost-install.sh
+          # Install additional packages specific to moses
+          sudo apt-get install -y python3-nose valgrind doxygen
 
       - name: Restore cogutil cache
         uses: actions/cache@v4
