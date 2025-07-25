@@ -1,11 +1,14 @@
---- 
+---
 name: CogML CI Build (Self-Healing)
 
 "on":
-  push:
-    branches: [main, opencog-v6]
-  pull_request:
-    branches: [main, opencog-v6]
+  # Temporarily disabled to prevent job name conflicts with opencog-ecosystem-build.yml
+  # Re-enable only if consolidating workflows or renaming jobs
+  workflow_dispatch:
+  # push:
+  #   branches: [main, opencog-v6]
+  # pull_request:
+  #   branches: [main, opencog-v6]
 
 permissions:
   contents: read
