@@ -40,7 +40,7 @@ jobs:
 #          BOOST_ROOT: /usr/include/boost
 
       - name: Print build path for verification
-        run: echo "Build path will be: ${{ github.workspace }}/cogutil/build"
+        run: echo "Build path will be:" ${{ github.workspace }}/cogutil/build
 
       - name: Build cogutil
         working-directory: ${{ github.workspace }}/cogutil
@@ -100,7 +100,7 @@ jobs:
           sudo ldconfig
 
       - name: Print AtomSpace build path for verification
-        run: echo "AtomSpace build path will be: ${{ github.workspace }}/atomspace/build"
+        run: echo "AtomSpace build path will be:" ${{ github.workspace }}/atomspace/build
 
       - name: Build AtomSpace
         working-directory: ${{ github.workspace }}/atomspace
@@ -173,7 +173,7 @@ jobs:
           cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
 
       - name: Print AtomSpace Rocks build path for verification
-        run: echo "AtomSpace Rocks build path will be: ${{ github.workspace }}/atomspace-rocks/build"
+        run: echo "AtomSpace Rocks build path will be:" ${{ github.workspace }}/atomspace-rocks/build
 
       - name: Build AtomSpace Rocks
         working-directory: ${{ github.workspace }}/atomspace-rocks
@@ -237,7 +237,7 @@ jobs:
           cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
 
       - name: Print AtomSpace RESTful build path for verification
-        run: echo "AtomSpace RESTful build path will be: ${{ github.workspace }}/atomspace-restful/build"
+        run: echo "AtomSpace RESTful build path will be:" ${{ github.workspace }}/atomspace-restful/build
 
       - name: Build AtomSpace RESTful
         working-directory: ${{ github.workspace }}/atomspace-restful
@@ -291,7 +291,7 @@ jobs:
           cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
 
       - name: Print unify build path for verification
-        run: echo "Unify build path will be: /tmp/unify/build"
+        run: echo "Unify build path will be:" /tmp/unify/build
 
       - name: Build and install unify
         run: |
@@ -360,7 +360,7 @@ jobs:
           # Unify is already installed via cache
 
       - name: Print URE build path for verification
-        run: echo "URE build path will be: ${{ github.workspace }}/ure/build"
+        run: echo "URE build path will be:" ${{ github.workspace }}/ure/build
 
       - name: Build URE
         working-directory: ${{ github.workspace }}/ure
@@ -429,7 +429,7 @@ jobs:
           cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
 
       - name: Print CogServer build path for verification
-        run: echo "CogServer build path will be: ${{ github.workspace }}/cogserver/build"
+        run: echo "CogServer build path will be:" ${{ github.workspace }}/cogserver/build
 
       - name: Build CogServer
         working-directory: ${{ github.workspace }}/cogserver
@@ -505,7 +505,7 @@ jobs:
           cd ${{ github.workspace }}/cogserver/build && sudo make install && sudo ldconfig
 
       - name: Print Attention build path for verification
-        run: echo "Attention build path will be: ${{ github.workspace }}/attention/build"
+        run: echo "Attention build path will be:" ${{ github.workspace }}/attention/build
 
       - name: Build Attention
         working-directory: ${{ github.workspace }}/attention
@@ -571,7 +571,7 @@ jobs:
           cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
 
       - name: Print SpaceTime build path for verification
-        run: echo "SpaceTime build path will be: ${{ github.workspace }}/spacetime/build"
+        run: echo "SpaceTime build path will be:" ${{ github.workspace }}/spacetime/build
 
       - name: Build SpaceTime
         working-directory: ${{ github.workspace }}/spacetime
@@ -671,7 +671,7 @@ jobs:
           cd ${{ github.workspace }}/spacetime/build && sudo make install && sudo ldconfig
 
       - name: Print PLN build path for verification
-        run: echo "PLN build path will be: ${{ github.workspace }}/pln/build"
+        run: echo "PLN build path will be:" ${{ github.workspace }}/pln/build
 
       - name: Build PLN
         working-directory: ${{ github.workspace }}/pln
@@ -740,7 +740,7 @@ jobs:
           cd ${{ github.workspace }}/ure/build && sudo make install && sudo ldconfig
 
       - name: Print Miner build path for verification
-        run: echo "Miner build path will be: ${{ github.workspace }}/miner/build"
+        run: echo "Miner build path will be:" ${{ github.workspace }}/miner/build
 
       - name: Build Miner
         working-directory: ${{ github.workspace }}/miner
@@ -781,7 +781,7 @@ jobs:
           cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
 
       - name: Print MOSES build path for verification
-        run: echo "MOSES build path will be: ${{ github.workspace }}/moses/build"
+        run: echo "MOSES build path will be:" ${{ github.workspace }}/moses/build
 
       - name: Build MOSES
         working-directory: ${{ github.workspace }}/moses
@@ -850,7 +850,7 @@ jobs:
           cd ${{ github.workspace }}/ure/build && sudo make install && sudo ldconfig
 
       - name: Print ASMoses build path for verification
-        run: echo "ASMoses build path will be: ${{ github.workspace }}/asmoses/build"
+        run: echo "ASMoses build path will be:" ${{ github.workspace }}/asmoses/build
 
       - name: Build ASMoses
         working-directory: ${{ github.workspace }}/asmoses
@@ -902,7 +902,7 @@ jobs:
           cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
 
       - name: Print LG-Atomese build path for verification
-        run: echo "LG-Atomese build path will be: ${{ github.workspace }}/lg-atomese/build"
+        run: echo "LG-Atomese build path will be:" ${{ github.workspace }}/lg-atomese/build
 
       - name: Build LG-Atomese
         working-directory: ${{ github.workspace }}/lg-atomese
@@ -978,7 +978,7 @@ jobs:
           cd ${{ github.workspace }}/cogserver/build && sudo make install && sudo ldconfig
 
       - name: Print Learn build path for verification
-        run: echo "Learn build path will be: ${{ github.workspace }}/learn/build"
+        run: echo "Learn build path will be:" ${{ github.workspace }}/learn/build
 
       - name: Build Learn
         working-directory: ${{ github.workspace }}/learn
@@ -1036,7 +1036,7 @@ jobs:
           cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
 
       - name: Print Language Learning path for verification
-        run: echo "Language Learning path: ${{ github.workspace }}/language-learning"
+        run: echo "Language Learning path:" ${{ github.workspace }}/language-learning
 
       - name: Test Language Learning
         working-directory: ${{ github.workspace }}/language-learning
@@ -1144,7 +1144,7 @@ jobs:
           cd ${{ github.workspace }}/lg-atomese/build && sudo make install && sudo ldconfig
 
       - name: Print OpenCog Integration build path for verification
-        run: echo "OpenCog Integration build path will be: ${{ github.workspace }}/opencog/build"
+        run: echo "OpenCog Integration build path will be:" ${{ github.workspace }}/opencog/build
 
       - name: Build OpenCog Integration
         working-directory: ${{ github.workspace }}/opencog
