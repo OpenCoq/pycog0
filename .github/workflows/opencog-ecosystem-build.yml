@@ -24,10 +24,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install dependencies
+      - name: Install dependencies with adaptive boost strategy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libboost-all-dev python3-nose valgrind doxygen
+          # Use adaptive boost installation script for better compatibility across Ubuntu versions
+          ./scripts/adaptive-boost-install.sh
+          # Install additional packages specific to cogutil
+          sudo apt-get install -y python3-nose valgrind doxygen
 
       - name: Build cogutil
         run: |
@@ -65,10 +67,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install dependencies
+      - name: Install dependencies with adaptive boost strategy
         run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose valgrind doxygen
+          # Use adaptive boost installation script for better compatibility across Ubuntu versions
+          ./scripts/adaptive-boost-install.sh
+          # Install additional packages specific to atomspace
+          sudo apt-get install -y guile-3.0-dev cython3 python3-nose valgrind doxygen
 
       - name: Restore cogutil cache
         uses: actions/cache@v4
