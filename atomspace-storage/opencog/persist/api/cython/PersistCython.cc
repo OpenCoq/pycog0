@@ -22,7 +22,8 @@
 
 #include <opencog/atomspace/AtomSpace.h>
 #include "PersistCython.h"
-#include <opencog/cython/opencog/Utilities.h>
+// #include <opencog/cython/opencog/Utilities.h>  // Temporarily disabled due to Cython 3.x issue
+#include <opencog/executioncontext/Context.h>    // For get_context_atomspace function
 
 using namespace opencog;
 

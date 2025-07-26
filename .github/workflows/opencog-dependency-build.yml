@@ -199,8 +199,12 @@ jobs:
           # Handle special cases
           case "${{ matrix.component }}" in
             atomspace*)
-              # Create lib directory if missing
-              [ ! -d "lib" ] && mkdir -p lib && echo "# Placeholder" > lib/CMakeLists.txt
+              # Create lib directory if missing and doesn't have CMakeLists.txt
+              if [ ! -d "lib" ]; then
+                mkdir -p lib && echo "# Placeholder" > lib/CMakeLists.txt
+              elif [ ! -f "lib/CMakeLists.txt" ]; then
+                echo "# Placeholder" > lib/CMakeLists.txt
+              fi
               ;;
           esac
           
@@ -408,7 +412,12 @@ jobs:
           # Handle special cases
           case "${{ matrix.component }}" in
             spacetime)
-              [ ! -d "lib" ] && mkdir -p lib && echo "# Placeholder" > lib/CMakeLists.txt
+              # Create lib directory if missing and doesn't have CMakeLists.txt
+              if [ ! -d "lib" ]; then
+                mkdir -p lib && echo "# Placeholder" > lib/CMakeLists.txt
+              elif [ ! -f "lib/CMakeLists.txt" ]; then
+                echo "# Placeholder" > lib/CMakeLists.txt
+              fi
               ;;
           esac
           

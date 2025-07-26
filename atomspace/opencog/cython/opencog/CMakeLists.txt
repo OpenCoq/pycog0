@@ -122,37 +122,37 @@ SET_TARGET_PROPERTIES(type_constructors PROPERTIES
 
 
 ############################## utilities #####################
+# Temporarily disabled due to Cython 3.x duplicate symbol issue
+# CYTHON_ADD_MODULE_PYX(utilities
+# 	"atomspace.pxd" opencog_atom_types
+# )
 
-CYTHON_ADD_MODULE_PYX(utilities
-	"atomspace.pxd" opencog_atom_types
-)
+# ADD_LIBRARY(utilities_cython
+# 	Utilities.cc
+# 	utilities.cpp
+# 	type_constructors.cpp
+# )
 
-ADD_LIBRARY(utilities_cython
-	Utilities.cc
-	utilities.cpp
-	type_constructors.cpp
-)
+# TARGET_LINK_LIBRARIES(utilities_cython
+# 	PythonEval
+# 	atomspace
+# 	# type_constructors
+# 	executioncontext
+# 	${Python3_LIBRARIES}
+# )
 
-TARGET_LINK_LIBRARIES(utilities_cython
-	PythonEval
-	atomspace
-	# type_constructors
-	executioncontext
-	${Python3_LIBRARIES}
-)
+# SET_TARGET_PROPERTIES(utilities_cython PROPERTIES
+# 	PREFIX ""
+# 	OUTPUT_NAME utilities)
 
-SET_TARGET_PROPERTIES(utilities_cython PROPERTIES
-	PREFIX ""
-	OUTPUT_NAME utilities)
+# INSTALL (TARGETS utilities_cython EXPORT AtomSpaceTargets
+#    DESTINATION "lib${LIB_DIR_SUFFIX}/opencog"
+# )
 
-INSTALL (TARGETS utilities_cython EXPORT AtomSpaceTargets
-   DESTINATION "lib${LIB_DIR_SUFFIX}/opencog"
-)
-
-INSTALL (FILES
-	Utilities.h
-	DESTINATION "include/opencog/cython/opencog"
-)
+# INSTALL (FILES
+# 	Utilities.h
+# 	DESTINATION "include/opencog/cython/opencog"
+# )
 
 ############################## execute module #####################
 
@@ -181,7 +181,7 @@ INSTALL(TARGETS
 	exec_cython
 	logger_cython
 	type_constructors
-	utilities_cython
+	# utilities_cython  # Disabled due to Cython 3.x issue
 	DESTINATION "${PYTHON_DEST}")
 
 # This custom target allows *only* the Python bindings to be installed;
@@ -195,7 +195,8 @@ ADD_CUSTOM_TARGET(PythonBindings DEPENDS
 	exec_cython
 	logger_cython
 	type_constructors
-	utilities_cython)
+	# utilities_cython  # Disabled due to Cython 3.x issue
+)
 
 IF (HAVE_GUILE)
 	############################## scheme wrapper #####################
