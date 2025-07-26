@@ -40,6 +40,7 @@
 #include <opencog/util/Counter.h>
 #include <opencog/util/dorepeat.h>
 #include <opencog/util/exceptions.h>
+#include <opencog/util/iostreamContainer.h>
 #include <opencog/util/KLD.h>
 
 #include "../type_checker/type_tree.h"
