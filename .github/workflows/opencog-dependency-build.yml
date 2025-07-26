@@ -162,7 +162,7 @@ jobs:
             guile-3.0-dev cython3 python3-nose valgrind doxygen \
             librocksdb-dev libcpprest-dev libssl-dev pkg-config \
             libjsoncpp-dev libzmq3-dev libtbb-dev libpqxx-dev \
-            unixodbc-dev
+            unixodbc-dev cxxtest
 
       - name: Install Python dependencies
         run: python3 -m pip install --upgrade pip cython
@@ -179,6 +179,25 @@ jobs:
           if [ -d "cogutil" ]; then
             cd cogutil && mkdir -p build && cd build
             cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+            cd ../..
+          fi
+          
+          # Install atomspace after cogutil
+          if [ -d "atomspace" ]; then
+            cd atomspace && mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                   -DCMAKE_INSTALL_PREFIX=/usr/local \
+                   -DPYTHON_EXECUTABLE=$(which python3)
+            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+            cd ../..
+          fi
+          
+          # Install atomspace-storage after atomspace
+          if [ -d "atomspace-storage" ]; then
+            cd atomspace-storage && mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                   -DCMAKE_INSTALL_PREFIX=/usr/local
             make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
             cd ../..
           fi
@@ -285,11 +304,13 @@ jobs:
 
       - name: Install prerequisite components
         run: |
-          # Install cogutil and atomspace
-          for component in cogutil atomspace; do
+          # Install cogutil, atomspace, and atomspace-storage first
+          for component in cogutil atomspace atomspace-storage; do
             if [ -d "$component" ]; then
               cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
               make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
               cd ../..
             fi
@@ -376,25 +397,41 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
             guile-3.0-dev cython3 python3-nose valgrind doxygen \
-            liboctomap-dev libssl-dev
+            liboctomap-dev libssl-dev cxxtest
 
       - name: Install prerequisites
         run: |
-          # Install foundation and core components
-          for component in cogutil atomspace unify ure; do
+          # Install foundation and core components first
+          for component in cogutil atomspace atomspace-storage; do
             if [ -d "$component" ]; then
               cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
               make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
               cd ../..
-            elif [ "$component" = "unify" ]; then
-              git clone --depth 1 https://github.com/opencog/unify /tmp/unify
-              cd /tmp/unify && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd /home/runner/work/opencog-org/opencog-org
             fi
           done
+          
+          # Install unify from external repo
+          if ! [ -d "/usr/local/lib/cmake/Unify" ]; then
+            git clone --depth 1 https://github.com/opencog/unify /tmp/unify
+            cd /tmp/unify && mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                   -DCMAKE_INSTALL_PREFIX=/usr/local
+            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+            cd /home/runner/work/opencog-org/opencog-org
+          fi
+          
+          # Install ure if available
+          if [ -d "ure" ]; then
+            cd ure && mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                   -DCMAKE_INSTALL_PREFIX=/usr/local \
+                   -DPYTHON_EXECUTABLE=$(which python3)
+            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+            cd ../..
+          fi
 
       - name: Build ${{ matrix.component }}
         id: build
