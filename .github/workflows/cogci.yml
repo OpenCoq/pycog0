@@ -2005,8 +2005,7 @@ jobs:
   # ==== Learning ====
   learn:
     runs-on: ubuntu-latest
-    needs: [atomspace-rocks]
-#    needs: [pln, miner, asmoses]
+    needs: [atomspace-rocks, pln, miner, asmoses]
     steps:
       - uses: actions/checkout@v4
 
@@ -3296,7 +3295,7 @@ jobs:
   # ==== Integration ====
   opencog:
     runs-on: ubuntu-latest
-#    needs: [learn, atomspace-rocks, atomspace-restful, moses, attention, lg-atomese]
+    needs: [learn, atomspace-rocks, atomspace-restful, moses, attention, lg-atomese]
     steps:
       - uses: actions/checkout@v4
 
