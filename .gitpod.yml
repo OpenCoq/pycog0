@@ -19,47 +19,52 @@ ports:
 
 # Workspace initialization tasks
 tasks:
-  - name: OpenCog Environment Setup
+  - name: OpenCog Automated Deployment
     init: |
-      echo "🧠 Initializing OpenCog GitPod Environment..."
+      echo "🧠 Starting OpenCog GitPod Automated Deployment..."
+      echo "=================================================="
       
-      # Initialize Guix environment
-      export PATH="/var/guix/profiles/per-user/gitpod/current-guix/bin:$PATH"
-      export GUIX_LOCPATH="$HOME/.guix-profile/lib/locale"
-      
-      # Create workspace directories
-      mkdir -p ~/opencog-workspace
-      mkdir -p ~/opencog-build
-      
-      # Set up environment variables
-      echo 'export PATH="/var/guix/profiles/per-user/gitpod/current-guix/bin:$PATH"' >> ~/.bashrc
-      echo 'export GUIX_LOCPATH="$HOME/.guix-profile/lib/locale"' >> ~/.bashrc
-      echo 'export OPENCOG_BUILD_DIR="$HOME/opencog-build"' >> ~/.bashrc
-      echo 'export OPENCOG_WORKSPACE="$HOME/opencog-workspace"' >> ~/.bashrc
-      
-      # Make setup script executable
+      # Make scripts executable
+      chmod +x .gitpod/*.sh
       chmod +x ./setup-opencog-gitpod.sh
       
-      echo "🎯 Initialization complete! Run ./setup-opencog-gitpod.sh to continue setup."
+      # Run environment setup
+      echo "🔧 Setting up environment..."
+      source .gitpod/setup.sh
+      
+      # Run main deployment
+      echo "🚀 Running automated deployment..."
+      .gitpod/deploy.sh
+      
+      echo "✅ OpenCog environment ready!"
     
     command: |
-      echo "🧠 Welcome to OpenCog GitPod Environment!"
-      echo "============================================"
+      # Source the updated environment
+      source ~/.bashrc
+      
       echo ""
-      echo "🚀 Quick Start Commands:"
-      echo "  ./setup-opencog-gitpod.sh   - Complete OpenCog environment setup"
-      echo "  cd atomspace && mkdir build && cd build && cmake .. && make"
-      echo "  cd cogserver && mkdir build && cd build && cmake .. && make"
+      echo "🧠 OpenCog GitPod Environment Ready!"
+      echo "===================================="
+      echo ""
+      echo "🎯 Quick Start:"
+      echo "  opencog_status              - Check environment status"
+      echo "  build-opencog              - Build complete OpenCog ecosystem"
+      echo "  start-cogserver            - Launch CogServer (port 17001)"
+      echo "  start-atomspace-repl       - Launch AtomSpace Guile REPL"
+      echo "  demos                      - Show available demos"
+      echo "  og                         - Navigate to workspace"
       echo ""
       echo "📖 Documentation:"
-      echo "  - OpenCog: https://opencog.org/"
-      echo "  - AtomSpace: https://wiki.opencog.org/w/AtomSpace"
-      echo "  - Dependency Build: docs/OPENCOG_DEPENDENCY_BUILD.md"
+      echo "  - Quick Guide: cat .gitpod/README.md"
+      echo "  - Troubleshooting: cat .gitpod/TROUBLESHOOTING.md"
+      echo "  - OpenCog Wiki: https://wiki.opencog.org/"
       echo ""
-      echo "🐛 Debugging & Development:"
-      echo "  - Guix shell: guix shell gcc-toolchain cmake"
-      echo "  - Check dependencies: ldd <binary>"
-      echo "  - Logs: journalctl -f"
+      echo "🌐 Service Ports (auto-forwarded by Gitpod):"
+      echo "  - CogServer: 17001 (telnet), 18001 (web)"
+      echo "  - REST API: 5000"
+      echo "  - Web Demos: 8080"
+      echo ""
+      echo "Happy coding with OpenCog! 🧠✨"
 
 # VS Code extensions useful for OpenCog development
 vscode:

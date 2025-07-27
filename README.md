@@ -2,21 +2,46 @@
 
 This repository contains the OpenCog ecosystem components and comprehensive build automation.
 
-## 🚀 Quick Start with GitPod
+## 🚀 One-Click Gitpod Deployment
 
-Launch a complete OpenCog development environment in your browser with one click:
+Launch a complete OpenCog development environment in your browser with zero configuration:
 
-[![Open in GitPod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/OpenCoq/opencog-org)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/OpenCoq/opencog-org)
 
-The GitPod environment includes:
-- **Complete OpenCog ecosystem** with all dependencies pre-installed
-- **Guix package manager** for reproducible builds  
-- **Python 3.10** development environment
-- **Pre-configured build scripts** for AtomSpace, CogServer, and more
-- **VS Code extensions** for C++, Python, and Nix development
-- **Port forwarding** for OpenCog services (CogServer, REST API, web demos)
+### ✨ What You Get Instantly
 
-📖 **[Complete GitPod Setup Guide](docs/GITPOD_SETUP.md)**
+- **🧠 Complete OpenCog Ecosystem** - AtomSpace, CogServer, and all core components
+- **🐍 Python 3.10 Environment** - Pre-configured with scientific computing libraries
+- **📦 Guix Package Manager** - Reproducible builds with automatic fallback
+- **🔧 Automated Build System** - One-command build of entire ecosystem
+- **🌐 Port Forwarding** - Direct browser access to OpenCog services
+- **📚 Comprehensive Documentation** - Guides, troubleshooting, and examples
+- **🛠️ VS Code Integration** - Full IDE with C++, Python, and Guile support
+
+### 🎯 Two-Minute Quick Start
+
+1. **Click the Gitpod button above** ⬆️
+2. **Wait 2-3 minutes** for automatic environment setup
+3. **Run `opencog_status`** to verify installation
+4. **Run `build-opencog`** to build all components
+5. **Run `demos`** to see available examples
+
+### 🌐 Service Access
+
+Once deployed, access OpenCog services via Gitpod's port forwarding:
+
+| Service | Port | Access |
+|---------|------|--------|
+| **CogServer Telnet** | 17001 | `start-cogserver` |
+| **CogServer Web UI** | 18001 | Browser preview |
+| **REST API** | 5000 | Browser preview |
+| **Web Demos** | 8080 | Browser preview |
+
+### 📖 Documentation
+
+- **[Complete Gitpod Guide](.gitpod/README.md)** - Comprehensive deployment documentation
+- **[Troubleshooting Guide](.gitpod/TROUBLESHOOTING.md)** - Solutions to common issues
+- **[OpenCog Wiki](https://wiki.opencog.org/)** - Official OpenCog documentation
 
 ## 🏗️ OpenCog Dependency Build Matrix
 
