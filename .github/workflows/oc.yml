@@ -1,7 +1,7 @@
-# .github/workflows/oci.yml
+# .github/workflows/oc.yml
 # Workflow for building and installing OpenCog components
 
-name: OCI
+name: OC
 
 on:
   push:
