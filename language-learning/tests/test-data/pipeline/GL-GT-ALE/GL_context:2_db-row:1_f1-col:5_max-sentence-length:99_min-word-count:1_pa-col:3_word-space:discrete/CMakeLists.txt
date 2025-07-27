@@ -1,0 +1,3 @@
+cmake_minimum_required(VERSION 3.16)
+project(GL_context_2_db_row_1_f1_col_5_max_sentence_length_99_min_word_count_1_pa_col_3_word_space_discrete)
+# Placeholder for future build directives
