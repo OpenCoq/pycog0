@@ -21,7 +21,7 @@ which guix
 cd /tmp
 wget https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh
 chmod +x guix-install.sh
-sudo ./guix-install.sh --enable-substitutes
+yes "" | sudo ./guix-install.sh
 
 # Update PATH
 export PATH="/var/guix/profiles/per-user/gitpod/current-guix/bin:$PATH"
