@@ -51,7 +51,7 @@ if ! command -v guix &> /dev/null; then
     cd /tmp
     wget https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh
     chmod +x guix-install.sh
-    sudo ./guix-install.sh --enable-substitutes
+    yes "" | sudo ./guix-install.sh
     rm guix-install.sh
     log_success "Guix installed successfully"
 else
