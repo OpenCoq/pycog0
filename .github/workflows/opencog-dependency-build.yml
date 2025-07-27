@@ -141,6 +141,7 @@ jobs:
       matrix:
         component:
           - atomspace
+          - atomspace-storage
           - atomspace-rocks
           - atomspace-ipfs
           - atomspace-websockets
