@@ -125,8 +125,29 @@ After Gitpod launches:
 
 1. **Wait for Initialization** - The deployment runs automatically
 2. **Check Status** - Run `opencog_status` to verify components
-3. **Build if Needed** - Run `build-opencog` if automatic build failed
-4. **Explore** - Use `og && ls` to explore the codebase
+3. **Fix Missing Commands** - If you get "command not found" errors, run:
+   ```bash
+   ./fix-cogserver-scripts.sh
+   source ~/.bashrc
+   ```
+4. **Build if Needed** - Run `build-opencog` if automatic build failed
+5. **Explore** - Use `og && ls` to explore the codebase
+
+### Troubleshooting Command Issues
+If you encounter "command not found" errors for OpenCog commands:
+
+```bash
+# Quick fix for missing service scripts
+./fix-cogserver-scripts.sh
+
+# Reload environment
+source ~/.bashrc
+
+# Verify commands work
+start-cogserver --help
+```
+
+For detailed troubleshooting, see [TROUBLESHOOTING.md](TROUBLESHOOTING.md).
 
 ### Development Cycle
 1. **Edit Code** - Use VS Code interface to modify OpenCog components

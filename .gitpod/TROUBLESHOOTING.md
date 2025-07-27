@@ -4,7 +4,59 @@ This guide helps resolve common issues encountered when using the OpenCog Gitpod
 
 ## 🚨 Common Issues & Solutions
 
-### 1. Deployment Issues
+### 1. Missing Commands
+
+#### "command not found" Errors
+**Symptoms:**
+- `bash: start-cogserver: command not found`
+- `bash: start-atomspace-repl: command not found`
+- `bash: build-opencog: command not found`
+
+**Root Cause:**
+The GitPod deployment may not have completed successfully, leaving some service scripts uncreated.
+
+**Quick Fix:**
+```bash
+# Run the fix script to create missing service scripts
+./fix-cogserver-scripts.sh
+
+# Reload your environment  
+source ~/.bashrc
+
+# Verify commands are now available
+which start-cogserver
+which start-atomspace-repl
+```
+
+**Manual Fix (if fix script not available):**
+```bash
+# Create the bin directory
+mkdir -p ~/.local/bin
+
+# Create start-cogserver script
+cat > ~/.local/bin/start-cogserver << 'EOF'
+#!/bin/bash
+echo "🖥️ Starting CogServer on port 17001..."
+WORKSPACE="${OPENCOG_WORKSPACE:-/workspace/opencog-org}"
+cd "$WORKSPACE/cogserver/build"
+if [ -f "./opencog/cogserver/server/cogserver" ]; then
+    ./opencog/cogserver/server/cogserver
+else
+    echo "❌ CogServer binary not found. Run build-cogserver first."
+fi
+EOF
+
+# Make it executable
+chmod +x ~/.local/bin/start-cogserver
+
+# Add to PATH if needed
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+    export PATH="$HOME/.local/bin:$PATH"
+fi
+```
+
+### 2. Deployment Issues
 
 #### Guix Installation Fails
 **Symptoms:**
