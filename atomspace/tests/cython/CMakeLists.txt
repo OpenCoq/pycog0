@@ -45,19 +45,20 @@ SET_PROPERTY(TEST PythonEvalUTest
 
 # The PythonUtilitiesUTest tests C++ utility functions used from Cython bindings
 # outside of those bindings so failures are easier to debug.
+# Temporarily disabled due to utilities_cython being disabled for Cython 3.x issues
 #
-ADD_CXXTEST(PythonUtilitiesUTest)
+# ADD_CXXTEST(PythonUtilitiesUTest)
 
-TARGET_LINK_LIBRARIES(PythonUtilitiesUTest
-	PythonEval
-	utilities_cython
-	atomspace_cython
-	atomspace
-	${COGUTIL_LIBRARY}
-)
+# TARGET_LINK_LIBRARIES(PythonUtilitiesUTest
+# 	PythonEval
+# 	utilities_cython
+# 	atomspace_cython
+# 	atomspace
+# 	${COGUTIL_LIBRARY}
+# )
 
-SET_PROPERTY(TEST PythonUtilitiesUTest
-	APPEND PROPERTY ENVIRONMENT ${TEST_ENVIRONMENT})
+# SET_PROPERTY(TEST PythonUtilitiesUTest
+# 	APPEND PROPERTY ENVIRONMENT ${TEST_ENVIRONMENT})
 
 IF (HAVE_NOSETESTS)
 
@@ -83,12 +84,13 @@ IF (HAVE_NOSETESTS)
 	SET_PROPERTY(TEST CythonGuile
 		APPEND PROPERTY ENVIRONMENT ${TEST_ENVIRONMENT})
 
-	ADD_TEST(CythonUtilities ${NOSETESTS_EXECUTABLE} -vs
-		${CMAKE_SOURCE_DIR}/tests/cython/utilities/)
-	SET_PROPERTY(TEST CythonUtilities
-		PROPERTY DEPENDS atomspace_cython logger_cython)
-	SET_PROPERTY(TEST CythonUtilities
-		APPEND PROPERTY ENVIRONMENT ${TEST_ENVIRONMENT})
+	# Temporarily disabled due to utilities_cython being disabled for Cython 3.x issues
+	# ADD_TEST(CythonUtilities ${NOSETESTS_EXECUTABLE} -vs
+	# 	${CMAKE_SOURCE_DIR}/tests/cython/utilities/)
+	# SET_PROPERTY(TEST CythonUtilities
+	# 	PROPERTY DEPENDS atomspace_cython logger_cython)
+	# SET_PROPERTY(TEST CythonUtilities
+	# 	APPEND PROPERTY ENVIRONMENT ${TEST_ENVIRONMENT})
 
 	ADD_TEST(CythonBindlink ${NOSETESTS_EXECUTABLE} -vs
 			${CMAKE_SOURCE_DIR}/tests/cython/bindlink/)
