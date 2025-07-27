@@ -112,7 +112,7 @@ RUN echo '#!/bin/bash' > /home/gitpod/.local/bin/demos && \
     echo 'echo "   start-cogserver"' >> /home/gitpod/.local/bin/demos && \
     echo 'echo ""' >> /home/gitpod/.local/bin/demos && \
     echo 'echo "2. AtomSpace Python Demo:"' >> /home/gitpod/.local/bin/demos && \
-    echo 'echo "   python3 -c '\''from opencog.atomspace import *; print(\"AtomSpace available\")'\'"' >> /home/gitpod/.local/bin/demos && \
+    echo 'echo "   python3 -c \"from opencog.atomspace import *; print(\\\"AtomSpace available\\\")\""' >> /home/gitpod/.local/bin/demos && \
     echo 'echo ""' >> /home/gitpod/.local/bin/demos && \
     echo 'echo "3. Guile Scheme Demo:"' >> /home/gitpod/.local/bin/demos && \
     echo 'echo "   start-atomspace-repl"' >> /home/gitpod/.local/bin/demos && \
