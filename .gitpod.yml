@@ -8,7 +8,7 @@ ports:
     onOpen: ignore
     description: CogServer telnet port
   - port: 18001
-    onOpen: ignore  
+    onOpen: ignore
     description: CogServer web interface
   - port: 5000
     onOpen: ignore
@@ -23,25 +23,25 @@ tasks:
     init: |
       echo "🧠 Starting OpenCog GitPod Automated Deployment..."
       echo "=================================================="
-      
+
       # Make scripts executable
       chmod +x .gitpod/*.sh
       chmod +x ./setup-opencog-gitpod.sh
-      
+
       # Run environment setup
       echo "🔧 Setting up environment..."
       source .gitpod/setup.sh
-      
+
       # Run main deployment
       echo "🚀 Running automated deployment..."
       .gitpod/deploy.sh
-      
+
       echo "✅ OpenCog environment ready!"
-    
+
     command: |
       # Source the updated environment
       source ~/.bashrc
-      
+
       echo ""
       echo "🧠 OpenCog GitPod Environment Ready!"
       echo "===================================="
@@ -86,7 +86,7 @@ github:
     pullRequests: true
     # Pull requests from forks
     pullRequestsFromForks: true
-    # Add a check to PRs 
+    # Add a check to PRs
     addCheck: true
     # Add a "Review in Gitpod" button as a comment to PRs
     addComment: false
