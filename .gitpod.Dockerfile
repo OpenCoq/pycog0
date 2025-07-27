@@ -49,7 +49,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
 RUN cd /tmp && \
     wget https://git.savannah.gnu.org/cgit/guix.git/plain/etc/guix-install.sh && \
     chmod +x guix-install.sh && \
-    sudo ./guix-install.sh --enable-substitutes && \
+    yes "" | sudo ./guix-install.sh && \
     sudo ln -sf /var/guix/profiles/per-user/root/current-guix/bin/guix /usr/local/bin/guix && \
     rm guix-install.sh
 
