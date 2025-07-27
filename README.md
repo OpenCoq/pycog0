@@ -2,6 +2,22 @@
 
 This repository contains the OpenCog ecosystem components and comprehensive build automation.
 
+## 🚀 Quick Start with GitPod
+
+Launch a complete OpenCog development environment in your browser with one click:
+
+[![Open in GitPod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/OpenCoq/opencog-org)
+
+The GitPod environment includes:
+- **Complete OpenCog ecosystem** with all dependencies pre-installed
+- **Guix package manager** for reproducible builds  
+- **Python 3.10** development environment
+- **Pre-configured build scripts** for AtomSpace, CogServer, and more
+- **VS Code extensions** for C++, Python, and Nix development
+- **Port forwarding** for OpenCog services (CogServer, REST API, web demos)
+
+📖 **[Complete GitPod Setup Guide](docs/GITPOD_SETUP.md)**
+
 ## 🏗️ OpenCog Dependency Build Matrix
 
 We've implemented a comprehensive GitHub Actions workflow that builds and installs all OpenCog components according to dependency diagrams with matrix discovery of hidden dependencies.
