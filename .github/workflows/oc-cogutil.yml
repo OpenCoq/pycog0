@@ -1,0 +1,79 @@
+# .github/workflows/oc-cogutil.yml
+# Workflow for building and installing OpenCog components
+
+name: OC-CogUtil
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  CCACHE_DIR: /ws/ccache
+  MAKEFLAGS: -j2
+
+jobs:
+  build:
+    name: Build All Components
+    runs-on: ubuntu-latest
+    container:
+      image: opencog/opencog-deps
+      options: --user root
+      env:
+        CCACHE_DIR: /ws/ccache
+        MAKEFLAGS: -j2
+    services:
+      opencog-postgres:
+        image: opencog/postgres
+        env:
+          POSTGRES_USER: opencog_test
+          POSTGRES_PASSWORD: cheese
+          POSTGRES_DB: atomspace_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      # Checkout the Repository
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # 01. Install Build Dependencies
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ccache pkg-config cmake build-essential git
+
+      # 02. Build and Install cogutil
+      - name: Build and Install cogutil
+        run: |
+          mkdir -p cogutil/build && cd cogutil/build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          make -j2
+          sudo make install
+          sudo ldconfig
+          cd ../..
+
+      # (Optional) Package Components
+      - name: Package Components
+        if: github.ref == 'refs/heads/main'
+        run: |
+          # cogutil Packaging
+          cd cogutil/build
+          make package || echo "cogutil package target not defined."
+          cd ../..
+
+      # Upload Build Artifacts
+      - name: Upload Build Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            cogutil/build/
