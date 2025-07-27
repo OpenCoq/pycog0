@@ -16,6 +16,8 @@ The GitPod environment includes:
 - **VS Code extensions** for C++, Python, and Nix development
 - **Port forwarding** for OpenCog services (CogServer, REST API, web demos)
 
+📖 **[Complete GitPod Setup Guide](docs/GITPOD_SETUP.md)**
+
 ## 🏗️ OpenCog Dependency Build Matrix
 
 We've implemented a comprehensive GitHub Actions workflow that builds and installs all OpenCog components according to dependency diagrams with matrix discovery of hidden dependencies.
