@@ -1,7 +1,7 @@
-# .github/workflows/oc.yml
+# .github/workflows/oci.yml
 # Workflow for building and installing OpenCog components
 
-name: OC
+name: OCI
 
 on:
   push:
@@ -240,6 +240,150 @@ jobs:
           sudo ldconfig
           cd ../..
 
+      # Run Tests for Each Component
+      - name: Run Tests
+        run: |
+          # cogutil Tests
+          cd cogutil/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # atomspace Tests
+          cd atomspace/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # atomspace-storage Tests
+          cd atomspace-storage/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # atomspace-rocks Tests
+          cd atomspace-rocks/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # atomspace-restful Tests
+          cd atomspace-restful/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # cogserver Tests
+          cd cogserver/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # unify Tests
+          cd unify/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # ure Tests
+          cd ure/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # spacetime Tests
+          cd spacetime/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # attention Tests
+          cd attention/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # miner Tests
+          cd miner/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # pln Tests
+          cd pln/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # moses Tests
+          cd moses/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # asmoses Tests
+          cd asmoses/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # lg-atomese Tests
+          cd lg-atomese/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # learn Tests
+          cd learn/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # pattern-index Tests
+          cd pattern-index/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # vision Tests
+          cd vision/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+          # opencog Tests
+          cd opencog/build
+          make tests
+          make check ARGS="$MAKEFLAGS"
+          cd ../..
+
+      # Upload Test Logs
+      - name: Upload Test Logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: |
+            cogutil/build/Testing/Temporary/LastTest.log
+            atomspace/build/Testing/Temporary/LastTest.log
+            atomspace-storage/build/Testing/Temporary/LastTest.log
+            atomspace-rocks/build/Testing/Temporary/LastTest.log
+            atomspace-restful/build/Testing/Temporary/LastTest.log
+            cogserver/build/Testing/Temporary/LastTest.log
+            unify/build/Testing/Temporary/LastTest.log
+            ure/build/Testing/Temporary/LastTest.log
+            spacetime/build/Testing/Temporary/LastTest.log
+            attention/build/Testing/Temporary/LastTest.log
+            miner/build/Testing/Temporary/LastTest.log
+            pln/build/Testing/Temporary/LastTest.log
+            moses/build/Testing/Temporary/LastTest.log
+            asmoses/build/Testing/Temporary/LastTest.log
+            lg-atomese/build/Testing/Temporary/LastTest.log
+            learn/build/Testing/Temporary/LastTest.log
+            pattern-index/build/Testing/Temporary/LastTest.log
+            vision/build/Testing/Temporary/LastTest.log
+            opencog/build/Testing/Temporary/LastTest.log
+
       # (Optional) Package Components
       - name: Package Components
         if: github.ref == 'refs/heads/main'
@@ -365,4 +509,3 @@ jobs:
             pattern-index/build/
             vision/build/
             opencog/build/
-

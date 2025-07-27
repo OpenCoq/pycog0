@@ -15,7 +15,7 @@ using namespace std;
 
 PatternIndexAPI::PatternIndexAPI()
 {
-    atomSpace = SchemeSmob::ss_get_env_as("PatternIndex");
+    atomSpace = SchemeSmob::ss_get_env_as("PatternIndex").get();
     schemeEval = new SchemeEval(atomSpace);
     lastUsedTicket = 0;
 }
@@ -326,7 +326,7 @@ Handle PatternIndexAPI::createIndex(const HandleSeq &handles)
     int tkt = -1;
     TypeFrameIndex *index = new TypeFrameIndex();
 
-    for (const Handle h : handles) {
+    for (const Handle& h : handles) {
         index->add(h, 0);
     }
 

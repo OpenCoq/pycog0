@@ -24,3 +24,7 @@ Makefile
 # Generated files
 *.cmake
 !CMakeLists.txt
+
+# Test files
+test-*.sh
+*-test.sh
