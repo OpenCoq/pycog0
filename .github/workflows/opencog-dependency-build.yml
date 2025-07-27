@@ -214,6 +214,22 @@ jobs:
             exit 0
           fi
           
+          # Ensure atomspace-storage is built and installed before components that depend on it
+          case "${{ matrix.component }}" in
+            atomspace-rocks|atomspace-ipfs|atomspace-websockets|atomspace-restful|atomspace-bridge|atomspace-metta|atomspace-rpc|atomspace-cog|atomspace-agents|atomspace-dht)
+              if [ ! -f "/usr/local/lib/cmake/AtomSpaceStorage/AtomSpaceStorageConfig.cmake" ]; then
+                echo "🔄 Installing atomspace-storage prerequisite for ${{ matrix.component }}"
+                if [ -d "atomspace-storage" ]; then
+                  cd atomspace-storage && mkdir -p build && cd build
+                  cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                         -DCMAKE_INSTALL_PREFIX=/usr/local
+                  make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+                  cd ../..
+                fi
+              fi
+              ;;
+          esac
+          
           cd "${{ matrix.component }}"
           
           # Handle special cases
@@ -328,6 +344,17 @@ jobs:
             git clone --depth 1 https://github.com/opencog/unify /tmp/unify
             cd /tmp/unify
           else
+            # Ensure unify is installed for ure
+            if [ "${{ matrix.component }}" = "ure" ] && [ ! -f "/usr/local/lib/cmake/Unify/UnifyConfig.cmake" ]; then
+              echo "🔄 Installing unify prerequisite for ure"
+              git clone --depth 1 https://github.com/opencog/unify /tmp/unify
+              cd /tmp/unify && mkdir -p build && cd build
+              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local
+              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+              cd /home/runner/work/opencog-org/opencog-org
+            fi
+            
             if [ ! -d "${{ matrix.component }}" ]; then
               echo "⚠️  Component directory not found: ${{ matrix.component }}"
               exit 0
