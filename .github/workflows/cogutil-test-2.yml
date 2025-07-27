@@ -1,0 +1,60 @@
+---
+name: CogUtil Build Test 2
+
+on:
+  push:
+    branches: [opencog-v6]
+  pull_request:
+    branches: [opencog-v6]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  CMAKE_BUILD_TYPE: Release
+  MAKEFLAGS: "-j$(nproc)"
+
+jobs:
+  # ==== Foundation Layer ====
+  cogutil:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: .
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libboost-all-dev cxxtest
+
+      - name: Print build path for verification
+        run: echo "Build path will be:" cogutil/build
+
+      - name: Build cogutil
+        working-directory: cogutil
+        run: |
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+          make $MAKEFLAGS
+
+      - name: Test cogutil
+        working-directory: cogutil/build
+        run: make check
+
+      - name: Install cogutil
+        working-directory: cogutil/build
+        run: |
+          sudo make install
+          sudo ldconfig
+
+      - name: Cache cogutil build
+        uses: actions/cache@v4
+        with:
+          path: |
+            cogutil/build
+            /usr/local/include/opencog/util
+            /usr/local/lib/opencog
+          key: cogutil-${{ runner.os }}-${{ github.sha }}
