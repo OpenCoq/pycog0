@@ -131,7 +131,7 @@ install_fallback_packages() {
 
 # Build core OpenCog components
 build_opencog_components() {
-    local components=("cogutil" "atomspace" "cogserver")
+    local components=("cogutil" "atomspace" "atomspace-storage" "cogserver")
     
     for component in "${components[@]}"; do
         log_info "Building $component..."
@@ -239,7 +239,7 @@ verify_deployment() {
     local verification_passed=true
     
     # Check if key binaries exist
-    local components=("cogutil" "atomspace" "cogserver")
+    local components=("cogutil" "atomspace" "atomspace-storage" "cogserver")
     for component in "${components[@]}"; do
         local build_dir="/workspace/opencog-org/$component/build"
         if [ -d "$build_dir" ] && [ "$(ls -A "$build_dir" 2>/dev/null)" ]; then
@@ -288,6 +288,7 @@ display_next_steps() {
 🔧 Build Individual Components:
   build-cogutil           - Build CogUtil library
   build-atomspace         - Build AtomSpace
+  build-atomspace-storage - Build AtomSpace Storage (required for CogServer)
   build-cogserver         - Build CogServer
 
 🌐 Access Points:

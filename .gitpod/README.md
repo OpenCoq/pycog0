@@ -54,6 +54,7 @@ The deployment follows this automated sequence:
 3. **Component Building**
    - Build CogUtil (utility library)
    - Build AtomSpace (knowledge representation)
+   - Build AtomSpace Storage (s-expression parsing, required for CogServer)
    - Build CogServer (reasoning server)
 
 4. **Service Configuration**
@@ -109,6 +110,7 @@ start-atomspace-repl     # Launch AtomSpace Guile REPL
 # Build components
 build-opencog           # Build complete ecosystem
 build-atomspace         # Build AtomSpace only
+build-atomspace-storage # Build AtomSpace Storage only
 build-cogserver         # Build CogServer only
 build-cogutil           # Build CogUtil only
 
@@ -161,6 +163,7 @@ The environment includes these OpenCog ecosystem components:
 #### Core Infrastructure
 - **CogUtil** - Utility libraries and basic data structures
 - **AtomSpace** - Knowledge representation and storage
+- **AtomSpace Storage** - S-expression parsing and storage backends (required for CogServer)
 - **CogServer** - Network reasoning server
 
 #### Language & Learning
@@ -237,7 +240,8 @@ cmake .. \
 Components must be built in order:
 1. **CogUtil** - Base utilities (no dependencies)
 2. **AtomSpace** - Depends on CogUtil
-3. **CogServer** - Depends on AtomSpace
+3. **AtomSpace Storage** - Depends on AtomSpace (provides s-expression parsing)
+4. **CogServer** - Depends on AtomSpace and AtomSpace Storage
 
 ### Parallel Building
 For Gitpod's resource constraints:

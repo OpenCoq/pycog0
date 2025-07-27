@@ -194,7 +194,7 @@ opencog_status() {
     echo "Guix Profile: $GUIX_PROFILE"
     echo ""
     echo "Available Components:"
-    for component in cogutil atomspace cogserver; do
+    for component in cogutil atomspace atomspace-storage cogserver; do
         if [ -d "$OPENCOG_WORKSPACE/$component" ]; then
             echo "  ✅ $component"
         else
@@ -203,7 +203,7 @@ opencog_status() {
     done
     echo ""
     echo "Build Status:"
-    for component in cogutil atomspace cogserver; do
+    for component in cogutil atomspace atomspace-storage cogserver; do
         if [ -d "$OPENCOG_WORKSPACE/$component/build" ] && [ "$(ls -A "$OPENCOG_WORKSPACE/$component/build" 2>/dev/null)" ]; then
             echo "  🔧 $component (built)"
         else
@@ -246,7 +246,7 @@ create_build_scripts() {
 
 if [ $# -eq 0 ]; then
     echo "Usage: build-component <component-name>"
-    echo "Available components: cogutil, atomspace, cogserver"
+    echo "Available components: cogutil, atomspace, atomspace-storage, cogserver"
     exit 1
 fi
 
@@ -279,7 +279,7 @@ EOF
     chmod +x "$bin_dir/build-component"
     
     # Individual component build scripts
-    for component in cogutil atomspace cogserver; do
+    for component in cogutil atomspace atomspace-storage cogserver; do
         cat > "$bin_dir/build-$component" << EOF
 #!/bin/bash
 echo "🔧 Building $component..."
@@ -295,7 +295,7 @@ echo "🏗️ Building complete OpenCog ecosystem..."
 echo "This will build components in dependency order."
 echo ""
 
-COMPONENTS=("cogutil" "atomspace" "cogserver")
+COMPONENTS=("cogutil" "atomspace" "atomspace-storage" "cogserver")
 FAILED_COMPONENTS=()
 
 for component in "${COMPONENTS[@]}"; do
