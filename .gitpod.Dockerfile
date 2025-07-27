@@ -20,7 +20,6 @@ RUN sudo apt-get update && sudo apt-get install -y \
     git \
     libboost-all-dev \
     libcppunit-dev \
-    libguile-3.0-dev \
     guile-3.0-dev \
     libbz2-dev \
     libexpat1-dev \
@@ -35,9 +34,7 @@ RUN sudo apt-get update && sudo apt-get install -y \
     python3-numpy \
     python3-scipy \
     cython3 \
-    python3-cython \
     python3-nose \
-    python3-cogserver \
     binutils \
     unzip \
     wget \
