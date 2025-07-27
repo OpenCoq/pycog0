@@ -1,7 +1,7 @@
 # GitPod Dockerfile for OpenCog development environment
 # Based on gitpod/workspace-python-3.10 for optimal OpenCog compatibility
 
-FROM gitpod/workspace-python-3.10:2024-12-19-14-12-15
+FROM gitpod/workspace-python-3.10:2025-07-23-06-50-33
 
 # Set environment variables
 ENV DEBIAN_FRONTEND=noninteractive
