@@ -170,20 +170,20 @@ jobs:
           sudo ldconfig
           cd ../..
 
-      # Build and Install asmoses
-      - name: Build and Install asmoses
+      # Build and Install moses
+      - name: Build and Install moses
         run: |
-          mkdir -p asmoses/build && cd asmoses/build
+          mkdir -p moses/build && cd moses/build
           cmake -DCMAKE_BUILD_TYPE=Release ..
           make -j2
           sudo make install
           sudo ldconfig
           cd ../..
 
-      # Build and Install moses
-      - name: Build and Install moses
+      # Build and Install asmoses
+      - name: Build and Install asmoses
         run: |
-          mkdir -p moses/build && cd moses/build
+          mkdir -p asmoses/build && cd asmoses/build
           cmake -DCMAKE_BUILD_TYPE=Release ..
           make -j2
           sudo make install
