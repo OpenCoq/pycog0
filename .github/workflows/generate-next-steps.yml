@@ -1,0 +1,480 @@
+name: Generate Next Steps from AGENT-ZERO-GENESIS
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'Which phase to generate issues for (1-10 or "all")'
+        required: true
+        default: '1'
+        type: choice
+        options:
+        - '1'
+        - '2'
+        - '3'
+        - '4'
+        - '5'
+        - '6'
+        - '7'
+        - '8'
+        - '9'
+        - '10'
+        - 'all'
+      mode:
+        description: 'Generation mode'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+        - 'preview'
+        - 'create'
+  push:
+    paths:
+      - 'AGENT-ZERO-GENESIS.md'
+  pull_request:
+    paths:
+      - 'AGENT-ZERO-GENESIS.md'
+
+env:
+  GENESIS_DOC: 'AGENT-ZERO-GENESIS.md'
+  
+jobs:
+  parse-and-generate:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyyaml requests
+        
+    - name: Parse AGENT-ZERO-GENESIS Document
+      id: parse
+      run: |
+        python3 << 'EOF'
+        import re
+        import json
+        import sys
+        import os
+        
+        def parse_genesis_document():
+            """Parse AGENT-ZERO-GENESIS.md and extract task information."""
+            try:
+                with open('AGENT-ZERO-GENESIS.md', 'r') as f:
+                    content = f.read()
+            except FileNotFoundError:
+                print("ERROR: AGENT-ZERO-GENESIS.md not found")
+                return []
+            
+            # Extract phases and tasks
+            phases = {}
+            current_phase = None
+            
+            lines = content.split('\n')
+            for line in lines:
+                # Match phase headers like "### Phase 1: Foundation Layer"
+                phase_match = re.match(r'^### Phase (\d+): (.+)$', line)
+                if phase_match:
+                    phase_num = phase_match.group(1)
+                    phase_name = phase_match.group(2)
+                    current_phase = phase_num
+                    phases[current_phase] = {
+                        'name': phase_name,
+                        'tasks': []
+                    }
+                    continue
+                
+                # Match task lines like "- [ ] **AZ-CORE-001**: Implement AgentZeroCore..."
+                task_match = re.match(r'^- \[ \] \*\*([A-Z]+-[A-Z]+-\d+)\*\*: (.+)$', line)
+                if task_match and current_phase:
+                    task_id = task_match.group(1)
+                    task_description = task_match.group(2)
+                    
+                    # Parse task components
+                    task_parts = task_id.split('-')
+                    if len(task_parts) >= 3:
+                        prefix = task_parts[0]  # AZ
+                        category = task_parts[1]  # CORE, PERC, etc.
+                        number = task_parts[2]  # 001
+                        
+                        phases[current_phase]['tasks'].append({
+                            'id': task_id,
+                            'title': task_description,
+                            'category': category,
+                            'number': number,
+                            'phase': current_phase,
+                            'phase_name': phases[current_phase]['name']
+                        })
+            
+            return phases
+        
+        def generate_issue_content(task):
+            """Generate GitHub issue content for a task."""
+            # Determine priority based on category and phase
+            priority_map = {
+                'CORE': 'high',
+                'BUILD': 'high', 
+                'TEST': 'high',
+                'PERC': 'medium',
+                'ACTION': 'medium',
+                'KNOW': 'high',
+                'REASON': 'high',
+                'PLAN': 'medium',
+                'LEARN': 'medium',
+                'NLP': 'low',
+                'COMM': 'low',
+                'MEM': 'medium',
+                'CONTEXT': 'medium',
+                'TOOL': 'low',
+                'INT': 'high',
+                'DOC': 'medium',
+                'DEMO': 'low',
+                'PERF': 'medium',
+                'META': 'low',
+                'MULTI': 'low',
+                'SCALE': 'low',
+                'HYBRID': 'low'
+            }
+            
+            priority = priority_map.get(task['category'], 'medium')
+            
+            # Generate labels based on task category
+            label_map = {
+                'CORE': ['enhancement', 'core-architecture'],
+                'BUILD': ['build-system', 'infrastructure'],
+                'TEST': ['testing', 'quality-assurance'], 
+                'PERC': ['perception', 'sensory-integration'],
+                'ACTION': ['action-execution', 'motor-control'],
+                'KNOW': ['knowledge-representation', 'reasoning'],
+                'REASON': ['reasoning', 'inference'],
+                'PLAN': ['planning', 'goal-management'],
+                'LEARN': ['learning', 'adaptation'],
+                'NLP': ['natural-language', 'communication'],
+                'COMM': ['communication', 'multi-agent'],
+                'MEM': ['memory', 'persistence'],
+                'CONTEXT': ['context-management', 'attention'],
+                'TOOL': ['tool-integration', 'external-systems'],
+                'INT': ['integration', 'testing'],
+                'DOC': ['documentation'],
+                'DEMO': ['demo', 'examples'],
+                'PERF': ['performance', 'optimization'],
+                'META': ['meta-cognition', 'self-modification'],
+                'MULTI': ['multi-agent', 'coordination'],
+                'SCALE': ['scalability', 'distributed'],
+                'HYBRID': ['python-interop', 'hybrid-systems']
+            }
+            
+            labels = label_map.get(task['category'], ['enhancement'])
+            labels.append(f"phase-{task['phase']}")
+            labels.append(f"priority-{priority}")
+            
+            # Generate implementation guidance based on category
+            guidance_map = {
+                'CORE': '''
+        ## Implementation Guidelines
+        
+        This task involves implementing core Agent-Zero functionality with deep OpenCog integration:
+        
+        ### Key Requirements:
+        - Inherit from OpenCog base classes where appropriate
+        - Use AtomSpace for all state representation
+        - Integrate with CogServer module system
+        - Implement proper error handling and logging
+        - Follow OpenCog coding standards
+        
+        ### Integration Points:
+        - AtomSpace operations for state management
+        - CogServer commands for external interface
+        - Proper memory management with Handles
+        - Thread-safe operations where needed
+        
+        ### Testing Requirements:
+        - Unit tests using OpenCog test framework
+        - Integration tests with AtomSpace
+        - Performance benchmarks
+        - Memory leak detection
+        ''',
+                'BUILD': '''
+        ## Implementation Guidelines
+        
+        This task involves setting up build infrastructure for Agent-Zero:
+        
+        ### Key Requirements:
+        - CMake configuration following OpenCog patterns
+        - Proper dependency management
+        - Cross-platform compatibility
+        - Integration with existing OpenCog build system
+        
+        ### Build Components:
+        - CMakeLists.txt files for each module
+        - Package configuration files
+        - Installation targets
+        - Test targets
+        
+        ### Integration:
+        - Link with OpenCog libraries
+        - Handle Boost dependencies
+        - Support both static and shared linking
+        ''',
+                'TEST': '''
+        ## Implementation Guidelines
+        
+        This task involves creating comprehensive test infrastructure:
+        
+        ### Key Requirements:
+        - Unit test framework integration
+        - Mock objects for OpenCog components
+        - Automated test execution
+        - Coverage reporting
+        
+        ### Test Categories:
+        - Unit tests for individual classes
+        - Integration tests for component interaction
+        - Performance benchmarks
+        - Regression tests
+        
+        ### Tools:
+        - CxxTest for C++ unit tests
+        - Google Test integration where appropriate
+        - Custom test harnesses for AtomSpace operations
+        '''
+            }
+            
+            guidance = guidance_map.get(task['category'], '''
+        ## Implementation Guidelines
+        
+        This task requires implementation of Agent-Zero functionality with OpenCog integration.
+        
+        ### Key Requirements:
+        - Follow OpenCog architectural patterns
+        - Use AtomSpace for knowledge representation
+        - Implement proper error handling
+        - Create comprehensive tests
+        
+        ### Integration:
+        - Integrate with relevant OpenCog components
+        - Follow coding standards and conventions
+        - Document all public interfaces
+        ''')
+            
+            # Generate dependencies based on category
+            dependency_map = {
+                'CORE': ['cogutil', 'atomspace', 'cogserver'],
+                'PERC': ['sensory', 'vision', 'perception', 'attention'],
+                'KNOW': ['atomspace', 'pln', 'ure', 'miner'],
+                'PLAN': ['spacetime', 'cogserver', 'atomspace'],
+                'LEARN': ['moses', 'asmoses', 'learn', 'atomspace'],
+                'NLP': ['lg-atomese', 'opencog', 'link-grammar'],
+                'MEM': ['atomspace-rocks', 'attention', 'atomspace'],
+                'TOOL': ['external-tools', 'ros-behavior-scripting']
+            }
+            
+            dependencies = dependency_map.get(task['category'], ['cogutil', 'atomspace'])
+            
+            return {
+                'title': f"{task['id']}: {task['title']}",
+                'body': f'''## 🎯 Task Description
+
+        {task['title']}
+
+        **Phase**: {task['phase']} - {task['phase_name']}
+        **Category**: {task['category']}
+        **Priority**: {priority.title()}
+        **Task ID**: `{task['id']}`
+
+        ## 🔗 Dependencies
+
+        This task requires the following OpenCog components:
+        {chr(10).join(f"- {dep}" for dep in dependencies)}
+
+        {guidance}
+
+        ## ✅ Acceptance Criteria
+
+        - [ ] Implementation follows OpenCog architectural patterns
+        - [ ] Code is well-documented with clear interfaces
+        - [ ] Unit tests provide adequate coverage
+        - [ ] Integration tests verify OpenCog compatibility  
+        - [ ] Performance meets specified targets
+        - [ ] Memory usage is optimized
+        - [ ] Error handling is robust
+
+        ## 🔗 Related Tasks
+
+        This task is part of Phase {task['phase']} of the Agent-Zero-Genesis project. See [AGENT-ZERO-GENESIS.md](../AGENT-ZERO-GENESIS.md) for the complete roadmap.
+
+        ## 📋 Definition of Done
+
+        - Implementation completed and tested
+        - Code review passed
+        - Documentation updated
+        - Integration verified with OpenCog ecosystem
+        - Performance benchmarks met
+
+        ---
+
+        *Auto-generated from AGENT-ZERO-GENESIS.md via generate-next-steps.yml workflow*
+        ''',
+                'labels': labels,
+                'priority': priority
+            }
+        
+        # Main execution
+        phases = parse_genesis_document()
+        
+        if not phases:
+            print("ERROR: No phases found in document")
+            sys.exit(1)
+        
+        # Get input parameters
+        target_phase = os.getenv('PHASE', '1')
+        mode = os.getenv('MODE', 'preview')
+        
+        # Generate issues for requested phase(s)
+        issues_to_generate = []
+        
+        if target_phase == 'all':
+            for phase_num, phase_data in phases.items():
+                for task in phase_data['tasks']:
+                    issues_to_generate.append(generate_issue_content(task))
+        else:
+            if target_phase in phases:
+                for task in phases[target_phase]['tasks']:
+                    issues_to_generate.append(generate_issue_content(task))
+            else:
+                print(f"ERROR: Phase {target_phase} not found")
+                sys.exit(1)
+        
+        # Output results
+        print(f"Found {len(issues_to_generate)} tasks to generate for phase(s): {target_phase}")
+        
+        # Save to GitHub Actions output
+        with open(os.getenv('GITHUB_OUTPUT', '/dev/stdout'), 'a') as f:
+            f.write(f"task_count={len(issues_to_generate)}\n")
+            f.write(f"phase={target_phase}\n")
+            f.write(f"issues_json<<EOF\n")
+            f.write(json.dumps(issues_to_generate, indent=2))
+            f.write(f"\nEOF\n")
+        
+        print(f"Generated {len(issues_to_generate)} issues for phase {target_phase}")
+        
+        EOF
+      env:
+        PHASE: ${{ github.event.inputs.phase || '1' }}
+        MODE: ${{ github.event.inputs.mode || 'preview' }}
+        
+    - name: Preview Generated Issues
+      if: ${{ github.event.inputs.mode == 'preview' || github.event_name != 'workflow_dispatch' }}
+      run: |
+        echo "## 📋 Generated Issues Preview"
+        echo ""
+        echo "**Phase**: ${{ steps.parse.outputs.phase }}"  
+        echo "**Count**: ${{ steps.parse.outputs.task_count }} issues"
+        echo ""
+        echo "### Issues to be created:"
+        echo ""
+        
+        python3 << 'EOF'
+        import json
+        import os
+        
+        issues_json = """${{ steps.parse.outputs.issues_json }}"""
+        
+        if issues_json.strip():
+            issues = json.loads(issues_json)
+            for i, issue in enumerate(issues, 1):
+                print(f"{i}. **{issue['title']}**")
+                print(f"   - Labels: {', '.join(issue['labels'])}")
+                print(f"   - Priority: {issue['priority']}")
+                print()
+        EOF
+        
+    - name: Create GitHub Issues
+      if: ${{ github.event.inputs.mode == 'create' }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ISSUES_JSON: ${{ steps.parse.outputs.issues_json }}
+      run: |
+        python3 << 'EOF'
+        import json
+        import os
+        import requests
+        
+        def create_github_issue(issue_data):
+            """Create a GitHub issue using the GitHub API."""
+            token = os.getenv('GITHUB_TOKEN')
+            repo = os.getenv('GITHUB_REPOSITORY')
+            
+            headers = {
+                'Authorization': f'token {token}',
+                'Accept': 'application/vnd.github.v3+json'
+            }
+            
+            url = f'https://api.github.com/repos/{repo}/issues'
+            
+            payload = {
+                'title': issue_data['title'],
+                'body': issue_data['body'],
+                'labels': issue_data['labels']
+            }
+            
+            response = requests.post(url, headers=headers, json=payload)
+            
+            if response.status_code == 201:
+                issue_url = response.json()['html_url']
+                print(f"✅ Created: {issue_data['title']} - {issue_url}")
+                return True
+            else:
+                print(f"❌ Failed to create: {issue_data['title']}")
+                print(f"   Error: {response.status_code} - {response.text}")
+                return False
+        
+        # Parse issues JSON
+        issues_json = os.getenv('ISSUES_JSON', '')
+        
+        if not issues_json.strip():
+            print("No issues to create")
+            exit(0)
+            
+        issues = json.loads(issues_json)
+        
+        print(f"Creating {len(issues)} GitHub issues...")
+        
+        created_count = 0
+        for issue in issues:
+            if create_github_issue(issue):
+                created_count += 1
+        
+        print(f"\n🎉 Successfully created {created_count}/{len(issues)} issues")
+        
+        EOF
+        
+    - name: Generate Summary Report
+      run: |
+        echo "## 📊 Generation Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "- **Phase**: ${{ steps.parse.outputs.phase }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Mode**: ${{ github.event.inputs.mode || 'preview' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Tasks Found**: ${{ steps.parse.outputs.task_count }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Trigger**: ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ "${{ github.event.inputs.mode }}" == "create" ]]; then
+          echo "✅ Issues have been created in the repository" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "👀 Preview mode - no issues were created" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "To create the issues, run this workflow again with mode='create'" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "---" >> $GITHUB_STEP_SUMMARY
+        echo "*Generated by Agent-Zero-Genesis automated workflow*" >> $GITHUB_STEP_SUMMARY
