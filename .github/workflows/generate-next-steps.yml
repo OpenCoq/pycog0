@@ -56,6 +56,28 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyyaml requests
         
+    - name: Check for AGENT-ZERO-GENESIS.md
+      run: |
+        echo "Checking for AGENT-ZERO-GENESIS.md..."
+        if [ ! -f AGENT-ZERO-GENESIS.md ]; then
+          echo "ERROR: AGENT-ZERO-GENESIS.md is missing!"
+          echo "Current directory: $(pwd)"
+          echo "Files in current directory:"
+          ls -la
+          exit 1
+        fi
+        
+        echo "AGENT-ZERO-GENESIS.md found successfully"
+        echo "File size: $(wc -c < AGENT-ZERO-GENESIS.md) bytes"
+        echo "File encoding check:"
+        file AGENT-ZERO-GENESIS.md || echo "file command not available"
+        
+        echo "First few lines of AGENT-ZERO-GENESIS.md:"
+        head -10 AGENT-ZERO-GENESIS.md
+        
+        echo "Checking for phase headers:"
+        grep -n "### Phase" AGENT-ZERO-GENESIS.md | head -5
+        
     - name: Parse AGENT-ZERO-GENESIS Document
       id: parse
       run: |
@@ -68,10 +90,19 @@ jobs:
         def parse_genesis_document():
             """Parse AGENT-ZERO-GENESIS.md and extract task information."""
             try:
-                with open('AGENT-ZERO-GENESIS.md', 'r') as f:
+                with open('AGENT-ZERO-GENESIS.md', 'r', encoding='utf-8') as f:
                     content = f.read()
             except FileNotFoundError:
-                print("ERROR: AGENT-ZERO-GENESIS.md not found")
+                print("ERROR: AGENT-ZERO-GENESIS.md not found in current directory")
+                print("Current working directory:", os.getcwd())
+                print("Files in current directory:", os.listdir('.'))
+                return []
+            except Exception as e:
+                print(f"ERROR: Failed to read AGENT-ZERO-GENESIS.md: {e}")
+                return []
+            
+            if not content.strip():
+                print("ERROR: AGENT-ZERO-GENESIS.md is empty")
                 return []
             
             # Extract phases and tasks
@@ -79,7 +110,13 @@ jobs:
             current_phase = None
             
             lines = content.split('\n')
-            for line in lines:
+            print(f"Processing {len(lines)} lines from AGENT-ZERO-GENESIS.md")
+            
+            for i, line in enumerate(lines, 1):
+                line = line.strip()
+                if not line:
+                    continue
+                    
                 # Match phase headers like "### Phase 1: Foundation Layer"
                 phase_match = re.match(r'^### Phase (\d+): (.+)$', line)
                 if phase_match:
@@ -90,6 +127,7 @@ jobs:
                         'name': phase_name,
                         'tasks': []
                     }
+                    print(f"Found phase {phase_num}: {phase_name}")
                     continue
                 
                 # Match task lines like "- [ ] **AZ-CORE-001**: Implement AgentZeroCore..."
@@ -113,7 +151,9 @@ jobs:
                             'phase': current_phase,
                             'phase_name': phases[current_phase]['name']
                         })
+                        print(f"  Found task: {task_id}")
             
+            print(f"Parsing complete. Found {len(phases)} phases with {sum(len(phase['tasks']) for phase in phases.values())} total tasks")
             return phases
         
         def generate_issue_content(task):
@@ -332,7 +372,23 @@ jobs:
         
         if not phases:
             print("ERROR: No phases found in document")
+            print("This could indicate:")
+            print("1. The file is empty or corrupted")
+            print("2. The phase headers don't match the expected format '### Phase X: Description'")
+            print("3. The task lines don't match the expected format '- [ ] **TASK-ID**: Description'")
+            print("4. There are encoding issues in the file")
             sys.exit(1)
+        
+        # Validate the parsed data
+        total_tasks = sum(len(phase['tasks']) for phase in phases.values())
+        if total_tasks == 0:
+            print("ERROR: No tasks found in any phases")
+            print("This could indicate:")
+            print("1. Task lines don't match the expected format")
+            print("2. Tasks are not properly nested under phase headers")
+            sys.exit(1)
+        
+        print(f"Validation successful: {len(phases)} phases with {total_tasks} total tasks")
         
         # Get input parameters
         target_phase = os.getenv('PHASE', '1')
@@ -357,14 +413,22 @@ jobs:
         print(f"Found {len(issues_to_generate)} tasks to generate for phase(s): {target_phase}")
         
         # Save to GitHub Actions output
-        with open(os.getenv('GITHUB_OUTPUT', '/dev/stdout'), 'a') as f:
-            f.write(f"task_count={len(issues_to_generate)}\n")
-            f.write(f"phase={target_phase}\n")
-            f.write(f"issues_json<<EOF\n")
-            f.write(json.dumps(issues_to_generate, indent=2))
-            f.write(f"\nEOF\n")
-        
-        print(f"Generated {len(issues_to_generate)} issues for phase {target_phase}")
+        try:
+            issues_json = json.dumps(issues_to_generate, indent=2, ensure_ascii=False)
+            with open(os.getenv('GITHUB_OUTPUT', '/dev/stdout'), 'a', encoding='utf-8') as f:
+                f.write(f"task_count={len(issues_to_generate)}\n")
+                f.write(f"phase={target_phase}\n")
+                f.write(f"issues_json<<EOF\n")
+                f.write(issues_json)
+                f.write(f"\nEOF\n")
+            
+            print(f"Generated {len(issues_to_generate)} issues for phase {target_phase}")
+            print(f"JSON output size: {len(issues_json)} characters")
+            
+        except Exception as e:
+            print(f"ERROR: Failed to write GitHub Actions output: {e}")
+            print("This could indicate JSON serialization issues or encoding problems")
+            sys.exit(1)
         
         EOF
       env:
