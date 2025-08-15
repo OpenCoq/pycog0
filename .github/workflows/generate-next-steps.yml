@@ -78,6 +78,36 @@ jobs:
         echo "Checking for phase headers:"
         grep -n "### Phase" AGENT-ZERO-GENESIS.md | head -5
         
+        echo "Checking for potential control characters:"
+        python3 << 'EOF'
+        import re
+        
+        try:
+            with open('AGENT-ZERO-GENESIS.md', 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            # Check for control characters
+            control_chars = []
+            for i, char in enumerate(content):
+                if ord(char) < 32 and char not in '\n\r\t':
+                    control_chars.append((i, repr(char), ord(char)))
+            
+            if control_chars:
+                print(f"Found {len(control_chars)} control characters:")
+                for pos, char_repr, char_ord in control_chars[:10]:  # Show first 10
+                    print(f"  Position {pos}: {char_repr} (ord: {char_ord})")
+                    # Show context around the control character
+                    start = max(0, pos - 20)
+                    end = min(len(content), pos + 20)
+                    context = content[start:end].replace('\n', '\\n')
+                    print(f"    Context: ...{context}...")
+            else:
+                print("No control characters found in AGENT-ZERO-GENESIS.md")
+                
+        except Exception as e:
+            print(f"Error checking file: {e}")
+        EOF
+        
     - name: Parse AGENT-ZERO-GENESIS Document
       id: parse
       run: |
@@ -92,6 +122,16 @@ jobs:
             try:
                 with open('AGENT-ZERO-GENESIS.md', 'r', encoding='utf-8') as f:
                     content = f.read()
+                
+                # Check for and clean any control characters in the content
+                import re
+                original_content = content
+                content = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', content)
+                
+                if content != original_content:
+                    print("WARNING: Control characters found and removed from AGENT-ZERO-GENESIS.md")
+                    print("This could cause issues with JSON generation")
+                
             except FileNotFoundError:
                 print("ERROR: AGENT-ZERO-GENESIS.md not found in current directory")
                 print("Current working directory:", os.getcwd())
@@ -155,6 +195,25 @@ jobs:
             
             print(f"Parsing complete. Found {len(phases)} phases with {sum(len(phase['tasks']) for phase in phases.values())} total tasks")
             return phases
+        
+        def clean_json_string(json_str):
+            """Clean JSON string by removing control characters and fixing common issues."""
+            import re
+            # Remove control characters except newlines and tabs
+            cleaned = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', json_str)
+            # Fix any double-escaped quotes that might cause issues
+            cleaned = cleaned.replace('\\"', '"').replace('\\n', '\n')
+            return cleaned
+        
+        def safe_json_loads(json_str):
+            """Safely load JSON with detailed error reporting."""
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error: {e}")
+                print(f"Problematic character at position {e.pos}: {repr(json_str[e.pos])}")
+                print(f"Context around error: {repr(json_str[max(0, e.pos-10):e.pos+10])}")
+                return None
         
         def generate_issue_content(task):
             """Generate GitHub issue content for a task."""
@@ -414,7 +473,13 @@ jobs:
         
         # Save to GitHub Actions output
         try:
-            issues_json = json.dumps(issues_to_generate, indent=2, ensure_ascii=False)
+            # Ensure clean JSON output with proper escaping
+            issues_json = json.dumps(issues_to_generate, indent=2, ensure_ascii=False, separators=(',', ': '))
+            
+            # Clean any potential control characters from the JSON string
+            import re
+            issues_json = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', issues_json)
+            
             with open(os.getenv('GITHUB_OUTPUT', '/dev/stdout'), 'a', encoding='utf-8') as f:
                 f.write(f"task_count={len(issues_to_generate)}\n")
                 f.write(f"phase={target_phase}\n")
@@ -452,8 +517,34 @@ jobs:
         
         issues_json = """${{ steps.parse.outputs.issues_json }}"""
         
+        # Clean the JSON string to remove any control characters
+        import re
+        def clean_json_string(json_str):
+            """Clean JSON string by removing control characters and fixing common issues."""
+            # Remove control characters except newlines and tabs
+            cleaned = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', json_str)
+            # Fix any double-escaped quotes that might cause issues
+            cleaned = cleaned.replace('\\"', '"').replace('\\n', '\n')
+            return cleaned
+        
+        def safe_json_loads(json_str):
+            """Safely load JSON with detailed error reporting."""
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error: {e}")
+                print(f"Problematic character at position {e.pos}: {repr(json_str[e.pos])}")
+                print(f"Context around error: {repr(json_str[max(0, e.pos-10):e.pos+10])}")
+                return None
+        
+        # Clean and parse the JSON
+        issues_json = clean_json_string(issues_json)
+        
         if issues_json.strip():
-            issues = json.loads(issues_json)
+            issues = safe_json_loads(issues_json)
+            if issues is None:
+                print("Failed to parse JSON, exiting...")
+                exit(1)
             for i, issue in enumerate(issues, 1):
                 print(f"{i}. **{issue['title']}**")
                 print(f"   - Labels: {', '.join(issue['labels'])}")
@@ -507,8 +598,34 @@ jobs:
         if not issues_json.strip():
             print("No issues to create")
             exit(0)
-            
-        issues = json.loads(issues_json)
+        
+        # Clean the JSON string to remove any control characters
+        import re
+        def clean_json_string(json_str):
+            """Clean JSON string by removing control characters and fixing common issues."""
+            # Remove control characters except newlines and tabs
+            cleaned = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', json_str)
+            # Fix any double-escaped quotes that might cause issues
+            cleaned = cleaned.replace('\\"', '"').replace('\\n', '\n')
+            return cleaned
+        
+        def safe_json_loads(json_str):
+            """Safely load JSON with detailed error reporting."""
+            try:
+                return json.loads(json_str)
+            except json.JSONDecodeError as e:
+                print(f"JSON decode error: {e}")
+                print(f"Problematic character at position {e.pos}: {repr(json_str[e.pos])}")
+                print(f"Context around error: {repr(json_str[max(0, e.pos-10):e.pos+10])}")
+                return None
+        
+        # Clean and parse the JSON
+        issues_json = clean_json_string(issues_json)
+        
+        issues = safe_json_loads(issues_json)
+        if issues is None:
+            print("Failed to parse JSON, exiting...")
+            exit(1)
         
         print(f"Creating {len(issues)} GitHub issues...")
         
