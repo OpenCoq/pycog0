@@ -58,11 +58,39 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
             doxygen valgrind cxxtest python3-nose python3-dev python3-pip \
-            libssl-dev pkg-config libunwind-dev binutils-dev libiberty-dev
+            libssl-dev pkg-config libunwind-dev binutils-dev libiberty-dev \
+            libgtest-dev libgmock-dev
 
       - name: Install Python dependencies
         run: |
           python3 -m pip install --upgrade pip setuptools wheel cython
+
+      - name: Install cogutil first (if building other components)
+        if: matrix.component != 'cogutil'
+        run: |
+          echo "🔧 Installing cogutil prerequisite for ${{ matrix.component }}"
+          if [ -d "cogutil" ]; then
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot build ${{ matrix.component }}"
+            exit 1
+          fi
 
       - name: Build ${{ matrix.component }}
         id: build
@@ -80,7 +108,8 @@ jobs:
           
           # Configure
           if cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                     -DCMAKE_INSTALL_PREFIX=/usr/local; then
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3); then
             echo "✅ CMake configuration successful"
           else
             echo "❌ CMake configuration failed"
