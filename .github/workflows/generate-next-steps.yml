@@ -56,6 +56,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyyaml requests
         
+    - name: Validate Workflow Components
+      run: |
+        echo "Running workflow validation..."
+        python3 scripts/validate_workflow.py
+        echo "Workflow validation completed successfully"
+        
     - name: Check for AGENT-ZERO-GENESIS.md
       run: |
         echo "Checking for AGENT-ZERO-GENESIS.md..."
@@ -120,7 +126,7 @@ jobs:
             exit(1)
         EOF
         
-    - name: Parse AGENT-ZERO-GENESIS Document
+    - name: Check for AGENT-ZERO-GENESIS.md
       id: parse
       run: |
         python3 << 'EOF'

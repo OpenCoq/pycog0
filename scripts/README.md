@@ -2,6 +2,29 @@
 
 This directory contains scripts that enhance the OpenCog ecosystem build pipeline with adaptive, self-healing capabilities.
 
+## Workflow Validation
+
+### `validate_workflow.py`
+
+A validation script that ensures the `generate-next-steps.yml` workflow components are working correctly.
+
+#### Features
+
+- **File Structure Validation**: Checks that `AGENT-ZERO-GENESIS.md` exists and has correct format
+- **Content Parsing**: Validates phase headers and task lines can be parsed correctly  
+- **JSON Generation**: Tests JSON generation and base64 encoding/decoding
+- **Data Integrity**: Ensures no data is lost during encoding process
+
+#### Usage
+
+```bash
+python3 scripts/validate_workflow.py
+```
+
+#### Integration
+
+This script is automatically run as part of the `generate-next-steps.yml` workflow to catch issues early.
+
 ## Adaptive Boost Installation
 
 ### `adaptive-boost-install.sh`
