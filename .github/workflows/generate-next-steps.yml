@@ -56,6 +56,12 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyyaml requests
         
+    - name: Validate Workflow Components
+      run: |
+        echo "Running workflow validation..."
+        python3 scripts/validate_workflow.py
+        echo "Workflow validation completed successfully"
+        
     - name: Check for AGENT-ZERO-GENESIS.md
       run: |
         echo "Checking for AGENT-ZERO-GENESIS.md..."
@@ -78,7 +84,7 @@ jobs:
         echo "Checking for phase headers:"
         grep -n "### Phase" AGENT-ZERO-GENESIS.md | head -5
         
-        echo "Checking for potential control characters:"
+        echo "Validating file structure:"
         python3 << 'EOF'
         import re
         
@@ -93,22 +99,34 @@ jobs:
                     control_chars.append((i, repr(char), ord(char)))
             
             if control_chars:
-                print(f"Found {len(control_chars)} control characters:")
+                print(f"⚠️  Found {len(control_chars)} control characters:")
                 for pos, char_repr, char_ord in control_chars[:10]:  # Show first 10
                     print(f"  Position {pos}: {char_repr} (ord: {char_ord})")
-                    # Show context around the control character
-                    start = max(0, pos - 20)
-                    end = min(len(content), pos + 20)
-                    context = content[start:end].replace('\n', '\\n')
-                    print(f"    Context: ...{context}...")
             else:
-                print("No control characters found in AGENT-ZERO-GENESIS.md")
+                print("✅ No problematic control characters found")
+            
+            # Check for required structure
+            phase_headers = re.findall(r'^### Phase \d+:', content, re.MULTILINE)
+            task_lines = re.findall(r'^- \[ \] \*\*[A-Z]+-[A-Z]+-\d+\*\*:', content, re.MULTILINE)
+            
+            print(f"✅ Found {len(phase_headers)} phase headers")
+            print(f"✅ Found {len(task_lines)} task lines")
+            
+            if len(phase_headers) == 0:
+                print("❌ ERROR: No phase headers found")
+                exit(1)
+            if len(task_lines) == 0:
+                print("❌ ERROR: No task lines found") 
+                exit(1)
+            
+            print("✅ File structure validation passed")
                 
         except Exception as e:
-            print(f"Error checking file: {e}")
+            print(f"❌ ERROR: Failed to validate file: {e}")
+            exit(1)
         EOF
         
-    - name: Parse AGENT-ZERO-GENESIS Document
+    - name: Check for AGENT-ZERO-GENESIS.md
       id: parse
       run: |
         python3 << 'EOF'
@@ -480,15 +498,18 @@ jobs:
             import re
             issues_json = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', issues_json)
             
+            # Base64 encode JSON to safely pass through GitHub Actions environment variables
+            import base64
+            issues_json_encoded = base64.b64encode(issues_json.encode('utf-8')).decode('ascii')
+            
             with open(os.getenv('GITHUB_OUTPUT', '/dev/stdout'), 'a', encoding='utf-8') as f:
                 f.write(f"task_count={len(issues_to_generate)}\n")
                 f.write(f"phase={target_phase}\n")
-                f.write(f"issues_json<<EOF\n")
-                f.write(issues_json)
-                f.write(f"\nEOF\n")
+                f.write(f"issues_json_encoded={issues_json_encoded}\n")
             
             print(f"Generated {len(issues_to_generate)} issues for phase {target_phase}")
             print(f"JSON output size: {len(issues_json)} characters")
+            print(f"Encoded output size: {len(issues_json_encoded)} characters")
             
         except Exception as e:
             print(f"ERROR: Failed to write GitHub Actions output: {e}")
@@ -514,54 +535,43 @@ jobs:
         python3 << 'EOF'
         import json
         import os
+        import base64
         
-        issues_json = """${{ steps.parse.outputs.issues_json }}"""
+        issues_json_encoded = """${{ steps.parse.outputs.issues_json_encoded }}"""
         
-        # Clean the JSON string to remove any control characters
-        import re
-        def clean_json_string(json_str):
-            """Clean JSON string by removing control characters and fixing common issues."""
-            # Remove control characters except newlines and tabs
-            cleaned = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', json_str)
-            # Fix any double-escaped quotes that might cause issues
-            cleaned = cleaned.replace('\\"', '"').replace('\\n', '\n')
-            return cleaned
-        
-        def safe_json_loads(json_str):
-            """Safely load JSON with detailed error reporting."""
+        if issues_json_encoded.strip():
             try:
-                return json.loads(json_str)
-            except json.JSONDecodeError as e:
-                print(f"JSON decode error: {e}")
-                print(f"Problematic character at position {e.pos}: {repr(json_str[e.pos])}")
-                print(f"Context around error: {repr(json_str[max(0, e.pos-10):e.pos+10])}")
-                return None
-        
-        # Clean and parse the JSON
-        issues_json = clean_json_string(issues_json)
-        
-        if issues_json.strip():
-            issues = safe_json_loads(issues_json)
-            if issues is None:
-                print("Failed to parse JSON, exiting...")
+                # Decode base64 to get the JSON string
+                issues_json = base64.b64decode(issues_json_encoded.encode('ascii')).decode('utf-8')
+                
+                # Parse the JSON
+                issues = json.loads(issues_json)
+                
+                for i, issue in enumerate(issues, 1):
+                    print(f"{i}. **{issue['title']}**")
+                    print(f"   - Labels: {', '.join(issue['labels'])}")
+                    print(f"   - Priority: {issue['priority']}")
+                    print()
+                    
+            except Exception as e:
+                print(f"ERROR: Failed to decode and parse JSON: {e}")
+                print("Raw encoded data length:", len(issues_json_encoded))
                 exit(1)
-            for i, issue in enumerate(issues, 1):
-                print(f"{i}. **{issue['title']}**")
-                print(f"   - Labels: {', '.join(issue['labels'])}")
-                print(f"   - Priority: {issue['priority']}")
-                print()
+        else:
+            print("No encoded JSON data found")
         EOF
         
     - name: Create GitHub Issues
       if: ${{ github.event.inputs.mode == 'create' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        ISSUES_JSON: ${{ steps.parse.outputs.issues_json }}
+        ISSUES_JSON_ENCODED: ${{ steps.parse.outputs.issues_json_encoded }}
       run: |
         python3 << 'EOF'
         import json
         import os
         import requests
+        import base64
         
         def create_github_issue(issue_data):
             """Create a GitHub issue using the GitHub API."""
@@ -593,38 +603,22 @@ jobs:
                 return False
         
         # Parse issues JSON
-        issues_json = os.getenv('ISSUES_JSON', '')
+        issues_json_encoded = os.getenv('ISSUES_JSON_ENCODED', '')
         
-        if not issues_json.strip():
-            print("No issues to create")
+        if not issues_json_encoded.strip():
+            print("No encoded issues data to process")
             exit(0)
         
-        # Clean the JSON string to remove any control characters
-        import re
-        def clean_json_string(json_str):
-            """Clean JSON string by removing control characters and fixing common issues."""
-            # Remove control characters except newlines and tabs
-            cleaned = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', json_str)
-            # Fix any double-escaped quotes that might cause issues
-            cleaned = cleaned.replace('\\"', '"').replace('\\n', '\n')
-            return cleaned
-        
-        def safe_json_loads(json_str):
-            """Safely load JSON with detailed error reporting."""
-            try:
-                return json.loads(json_str)
-            except json.JSONDecodeError as e:
-                print(f"JSON decode error: {e}")
-                print(f"Problematic character at position {e.pos}: {repr(json_str[e.pos])}")
-                print(f"Context around error: {repr(json_str[max(0, e.pos-10):e.pos+10])}")
-                return None
-        
-        # Clean and parse the JSON
-        issues_json = clean_json_string(issues_json)
-        
-        issues = safe_json_loads(issues_json)
-        if issues is None:
-            print("Failed to parse JSON, exiting...")
+        try:
+            # Decode base64 to get the JSON string
+            issues_json = base64.b64decode(issues_json_encoded.encode('ascii')).decode('utf-8')
+            
+            # Parse the JSON
+            issues = json.loads(issues_json)
+            
+        except Exception as e:
+            print(f"ERROR: Failed to decode and parse JSON: {e}")
+            print("Raw encoded data length:", len(issues_json_encoded))
             exit(1)
         
         print(f"Creating {len(issues)} GitHub issues...")
