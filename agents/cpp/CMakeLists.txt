@@ -39,9 +39,35 @@ endif()
 find_package(PkgConfig REQUIRED)
 
 # Core OpenCog dependencies (required for all modules)
-pkg_check_modules(COGUTIL REQUIRED cogutil)
-pkg_check_modules(ATOMSPACE REQUIRED atomspace)
-pkg_check_modules(COGSERVER REQUIRED cogserver)
+# These packages must be installed from the OpenCog ecosystem
+pkg_check_modules(COGUTIL cogutil)
+pkg_check_modules(ATOMSPACE atomspace)  
+pkg_check_modules(COGSERVER cogserver)
+
+if(NOT COGUTIL_FOUND)
+    message(FATAL_ERROR "\n"
+        "OpenCog dependency 'cogutil' not found.\n"
+        "Please install the OpenCog ecosystem first:\n"
+        "  See: https://github.com/opencog/cogutil\n"
+        "  Or use the OpenCog Dependency Build workflow\n"
+        "  See: docs/OPENCOG_DEPENDENCY_BUILD.md\n")
+endif()
+
+if(NOT ATOMSPACE_FOUND)
+    message(FATAL_ERROR "\n"
+        "OpenCog dependency 'atomspace' not found.\n" 
+        "Please install the OpenCog ecosystem first:\n"
+        "  See: https://github.com/opencog/atomspace\n"
+        "  Or use the OpenCog Dependency Build workflow\n")
+endif()
+
+if(NOT COGSERVER_FOUND)
+    message(FATAL_ERROR "\n"
+        "OpenCog dependency 'cogserver' not found.\n"
+        "Please install the OpenCog ecosystem first:\n" 
+        "  See: https://github.com/opencog/cogserver\n"
+        "  Or use the OpenCog Dependency Build workflow\n")
+endif()
 
 # Optional OpenCog dependencies (for specific modules)
 pkg_check_modules(PLN pln)
