@@ -34,7 +34,7 @@ cdef class ForwardChainer:
                                         deref(rbs.handle),
                                         deref(source.handle),
                                         c_vardecl,
-                                        <cAtomSpace*> (NULL if trace_as is None else trace_as.atomspace),
+                                        (<cAtomSpace*>NULL if trace_as is None else trace_as.atomspace),
                                         handle_vector)
         self._as = _as
         self._trace_as = trace_as
@@ -44,8 +44,7 @@ cdef class ForwardChainer:
 
     def get_results(self):
         cdef cHandle res_handle = self.chainer.get_results()
-        cdef Atom result = Atom.createAtom(res_handle)
-        return result
+        return Atom.createAtom(res_handle)
 
     def __dealloc__(self):
         del self.chainer
