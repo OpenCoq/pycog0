@@ -12,6 +12,7 @@
 #include <sstream>
 #include <algorithm>
 #include <ctime>
+#include <cstdlib>
 
 #include <opencog/atoms/atom_types/types.h>
 #include <opencog/atoms/base/Node.h>
@@ -296,14 +297,169 @@ std::string TaskManager::getStatusInfo() const
 {
     std::ostringstream status;
     status << "{";
+    
+    // Basic statistics
     status << "\"pending_tasks\":" << _task_queue.size() << ",";
+    status << "\"total_tasks\":" << _task_status.size() << ",";
     status << "\"current_task\":\"" << _current_task << "\",";
     status << "\"current_goal\":\"" << _current_goal << "\",";
+    
+    // Task status breakdown
+    int pending = 0, active = 0, completed = 0, failed = 0, cancelled = 0, suspended = 0;
+    for (const auto& pair : _task_status) {
+        switch (pair.second) {
+            case TaskStatus::PENDING: pending++; break;
+            case TaskStatus::ACTIVE: active++; break;
+            case TaskStatus::COMPLETED: completed++; break;
+            case TaskStatus::FAILED: failed++; break;
+            case TaskStatus::CANCELLED: cancelled++; break;
+            case TaskStatus::SUSPENDED: suspended++; break;
+        }
+    }
+    
+    status << "\"task_status_breakdown\":{";
+    status << "\"pending\":" << pending << ",";
+    status << "\"active\":" << active << ",";
+    status << "\"completed\":" << completed << ",";
+    status << "\"failed\":" << failed << ",";
+    status << "\"cancelled\":" << cancelled << ",";
+    status << "\"suspended\":" << suspended;
+    status << "},";
+    
+    // Priority distribution
+    int low = 0, medium = 0, high = 0, critical = 0;
+    for (const auto& pair : _task_priorities) {
+        switch (pair.second) {
+            case Priority::LOW: low++; break;
+            case Priority::MEDIUM: medium++; break;
+            case Priority::HIGH: high++; break;
+            case Priority::CRITICAL: critical++; break;
+        }
+    }
+    
+    status << "\"priority_distribution\":{";
+    status << "\"low\":" << low << ",";
+    status << "\"medium\":" << medium << ",";
+    status << "\"high\":" << high << ",";
+    status << "\"critical\":" << critical;
+    status << "},";
+    
+    // Configuration
+    status << "\"configuration\":{";
     status << "\"max_concurrent_tasks\":" << _max_concurrent_tasks << ",";
     status << "\"goal_decomposition_enabled\":" << (_enable_goal_decomposition ? "true" : "false") << ",";
     status << "\"priority_scheduling_enabled\":" << (_enable_priority_scheduling ? "true" : "false");
+    status << "},";
+    
+    // Context atoms
+    status << "\"atomspace_context\":{";
+    status << "\"task_context\":\"" << _task_context << "\",";
+    status << "\"goal_context\":\"" << _goal_context << "\",";
+    status << "\"execution_context\":\"" << _execution_context << "\",";
+    status << "\"goal_hierarchy_root\":\"" << _goal_hierarchy_root << "\"";
+    status << "},";
+    
+    // Goal achievement if available
+    if (_current_goal != Handle::UNDEFINED) {
+        // We can't call calculateGoalAchievement from const method, so provide basic info
+        status << "\"current_goal_info\":{";
+        status << "\"has_active_goal\":true,";
+        status << "\"goal_atom\":\"" << _current_goal << "\"";
+        status << "}";
+    } else {
+        status << "\"current_goal_info\":{\"has_active_goal\":false}";
+    }
+    
     status << "}";
     return status.str();
+}
+
+std::string TaskManager::getGoalHierarchyInfo(const Handle& goal_atom) const
+{
+    Handle target_goal = (goal_atom != Handle::UNDEFINED) ? goal_atom : _current_goal;
+    
+    std::ostringstream info;
+    info << "{";
+    
+    if (target_goal == Handle::UNDEFINED) {
+        info << "\"error\":\"No goal specified or current goal is undefined\"";
+        info << "}";
+        return info.str();
+    }
+    
+    try {
+        info << "\"goal\":\"" << target_goal << "\",";
+        info << "\"goal_name\":\"" << target_goal->get_name() << "\",";
+        
+        // Find subgoals
+        HandleSeq subgoals;
+        HandleSeq all_links = _atomspace->get_incoming_by_type(target_goal, INHERITANCE_LINK);
+        
+        for (const Handle& link : all_links) {
+            HandleSeq link_outgoing = link->getOutgoingSet();
+            if (link_outgoing.size() == 2 && link_outgoing[0] == target_goal) {
+                subgoals.push_back(link_outgoing[1]);
+            }
+        }
+        
+        info << "\"subgoals\":[";
+        for (size_t i = 0; i < subgoals.size(); ++i) {
+            if (i > 0) info << ",";
+            info << "{";
+            info << "\"atom\":\"" << subgoals[i] << "\",";
+            info << "\"name\":\"" << subgoals[i]->get_name() << "\"";
+            
+            // Check if subgoal has associated tasks
+            HandleSeq eval_links = _atomspace->get_atoms_by_type(EVALUATION_LINK);
+            Handle associated_task = Handle::UNDEFINED;
+            for (const Handle& eval : eval_links) {
+                HandleSeq eval_outgoing = eval->getOutgoingSet();
+                if (eval_outgoing.size() == 2 && eval_outgoing[1] == subgoals[i]) {
+                    associated_task = eval_outgoing[0];
+                    break;
+                }
+            }
+            
+            if (associated_task != Handle::UNDEFINED) {
+                info << ",\"associated_task\":\"" << associated_task << "\"";
+                auto status_it = _task_status.find(associated_task);
+                if (status_it != _task_status.end()) {
+                    info << ",\"task_status\":\"";
+                    switch (status_it->second) {
+                        case TaskStatus::PENDING: info << "PENDING"; break;
+                        case TaskStatus::ACTIVE: info << "ACTIVE"; break;
+                        case TaskStatus::COMPLETED: info << "COMPLETED"; break;
+                        case TaskStatus::FAILED: info << "FAILED"; break;
+                        case TaskStatus::CANCELLED: info << "CANCELLED"; break;
+                        case TaskStatus::SUSPENDED: info << "SUSPENDED"; break;
+                    }
+                    info << "\"";
+                }
+            }
+            
+            info << "}";
+        }
+        info << "],";
+        
+        info << "\"subgoal_count\":" << subgoals.size() << ",";
+        
+        // Goal achievement (simplified since we can't call non-const method)
+        TruthValuePtr goal_tv = target_goal->getTruthValue();
+        if (goal_tv) {
+            info << "\"current_truth_value\":{";
+            info << "\"strength\":" << goal_tv->get_mean() << ",";
+            info << "\"confidence\":" << goal_tv->get_confidence();
+            info << "}";
+        } else {
+            info << "\"current_truth_value\":null";
+        }
+        
+    } catch (const std::exception& e) {
+        info << "\"error\":\"" << e.what() << "\"";
+    }
+    
+    info << "}";
+    return info.str();
 }
 
 bool TaskManager::processTaskManagement()
@@ -318,20 +474,94 @@ bool TaskManager::processTaskManagement()
             if (_current_task != Handle::UNDEFINED) {
                 updateTaskStatus(_current_task, TaskStatus::ACTIVE);
                 logger().debug() << "[TaskManager] Started task: " << _current_task;
+                
+                // Add task start timestamp
+                Handle start_time_pred = _atomspace->add_node(PREDICATE_NODE, "task_started");
+                Handle start_time_value = _atomspace->add_node(NUMBER_NODE, std::to_string(std::time(nullptr)));
+                Handle start_time_eval = _atomspace->add_link(EVALUATION_LINK, {start_time_pred, _current_task, start_time_value});
+                
+                return true; // Task started, let it process in next cycle
             }
         }
         
-        // Process current task (simplified - just mark as completed)
+        // Process current task (enhanced task processing logic)
         if (_current_task != Handle::UNDEFINED) {
-            // In a real implementation, this would execute the actual task
-            completeTask(_current_task, true);
-            logger().debug() << "[TaskManager] Completed task: " << _current_task;
+            logger().debug() << "[TaskManager] Processing active task: " << _current_task;
+            
+            // Simulate task processing - in a real implementation, this would:
+            // 1. Execute the actual task logic
+            // 2. Check for completion conditions
+            // 3. Handle task-specific errors
+            // 4. Update progress indicators
+            
+            // For now, we'll complete tasks based on their type/complexity
+            std::string task_name = _current_task->get_name();
+            bool should_complete = true;
+            bool success = true;
+            
+            // Simulate different task processing behaviors
+            if (task_name.find("Analyze") != std::string::npos) {
+                // Analysis tasks take time but usually succeed
+                logger().debug() << "[TaskManager] Processing analysis task";
+            } else if (task_name.find("Plan") != std::string::npos) {
+                // Planning tasks require careful consideration
+                logger().debug() << "[TaskManager] Processing planning task";
+            } else if (task_name.find("Execute") != std::string::npos) {
+                // Execution tasks might fail sometimes
+                logger().debug() << "[TaskManager] Processing execution task";
+                // Simulate occasional failure (10% chance)
+                if (std::rand() % 10 == 0) {
+                    success = false;
+                    logger().warn() << "[TaskManager] Task execution simulation failed";
+                }
+            }
+            
+            if (should_complete) {
+                // Add task completion timestamp
+                Handle end_time_pred = _atomspace->add_node(PREDICATE_NODE, "task_completed");
+                Handle end_time_value = _atomspace->add_node(NUMBER_NODE, std::to_string(std::time(nullptr)));
+                Handle end_time_eval = _atomspace->add_link(EVALUATION_LINK, {end_time_pred, _current_task, end_time_value});
+                
+                completeTask(_current_task, success);
+                logger().debug() << "[TaskManager] Completed task: " << _current_task 
+                                << " (success: " << (success ? "true" : "false") << ")";
+                
+                // If task failed, may need to retry or create alternative tasks
+                if (!success) {
+                    logger().info() << "[TaskManager] Task failed, considering recovery options";
+                    // In a real implementation, this might:
+                    // - Retry the task
+                    // - Create alternative approach tasks
+                    // - Escalate to goal replanning
+                }
+            }
+        }
+        
+        // Update goal achievement if we have an active goal
+        if (_current_goal != Handle::UNDEFINED) {
+            TruthValuePtr achievement = calculateGoalAchievement(_current_goal);
+            if (achievement && achievement->get_mean() > 0.9) {
+                logger().info() << "[TaskManager] Goal nearly achieved: " << _current_goal 
+                               << " (achievement: " << achievement->get_mean() << ")";
+                
+                // Mark goal as achieved
+                Handle achieved_pred = _atomspace->add_node(PREDICATE_NODE, "goal_achieved");
+                Handle achieved_eval = _atomspace->add_link(EVALUATION_LINK, {achieved_pred, _current_goal});
+                achieved_eval->setTruthValue(achievement);
+            }
         }
         
         return true;
         
     } catch (const std::exception& e) {
         logger().error() << "[TaskManager] Error in task processing: " << e.what();
+        
+        // Reset current task on error to avoid getting stuck
+        if (_current_task != Handle::UNDEFINED) {
+            updateTaskStatus(_current_task, TaskStatus::FAILED);
+            _current_task = Handle::UNDEFINED;
+        }
+        
         return false;
     }
 }
