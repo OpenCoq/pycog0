@@ -168,6 +168,7 @@ REGISTER_OPENCOG_COMPONENT("motor" "motor" "Robotics")
 
 MESSAGE(STATUS "")
 MESSAGE(STATUS "--- Discovering Integration Layer Components ---")
+REGISTER_OPENCOG_COMPONENT("agents" "agents" "Integration")
 REGISTER_OPENCOG_COMPONENT("opencog" "opencog" "Integration")
 REGISTER_OPENCOG_COMPONENT("TinyCog" "TinyCog" "Integration")
 

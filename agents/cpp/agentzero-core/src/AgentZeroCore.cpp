@@ -283,7 +283,7 @@ void AgentZeroCore::createAgentSelfRepresentation()
     logger().debug() << "[AgentZeroCore] Creating agent self-representation";
     
     // Create agent self atom
-    _agent_self_atom = _atomspace->add_node(CONCEPT_NODE, _agent_name);
+    _agent_self_atom = _atomspace->add_node(CONCEPT_NODE, std::string(_agent_name));
     
     // Set initial truth value to indicate agent exists and is active
     TruthValuePtr agent_tv = SimpleTruthValue::createTV(1.0, 1.0);
@@ -306,7 +306,7 @@ void AgentZeroCore::setupCoreAtoms()
     HandleSeq agent_memory_link;
     agent_memory_link.push_back(_agent_self_atom);
     agent_memory_link.push_back(_working_memory_atom);
-    _atomspace->add_link(EVALUATION_LINK, agent_memory_link);
+    _atomspace->add_link(EVALUATION_LINK, std::move(agent_memory_link));
     
     logger().debug() << "[AgentZeroCore] Core atoms setup completed";
 }

@@ -69,7 +69,7 @@ Handle TaskManager::addSubgoal(const Handle& parent_goal, const std::string& sub
     HandleSeq subgoal_link;
     subgoal_link.push_back(parent_goal);
     subgoal_link.push_back(subgoal);
-    _atomspace->add_link(INHERITANCE_LINK, subgoal_link);
+    _atomspace->add_link(INHERITANCE_LINK, std::move(subgoal_link));
     
     return subgoal;
 }
@@ -90,7 +90,7 @@ Handle TaskManager::createTask(const std::string& task_description, Priority pri
         HandleSeq task_goal_link;
         task_goal_link.push_back(task_atom);
         task_goal_link.push_back(goal_atom);
-        _atomspace->add_link(EVALUATION_LINK, task_goal_link);
+        _atomspace->add_link(EVALUATION_LINK, std::move(task_goal_link));
     }
     
     // Add to task queue and set initial status
@@ -111,7 +111,7 @@ bool TaskManager::addTaskDependency(const Handle& task_atom, const Handle& depen
     HandleSeq dependency_link;
     dependency_link.push_back(task_atom);
     dependency_link.push_back(dependency_atom);
-    _atomspace->add_link(SEQUENTIAL_AND_LINK, dependency_link);
+    _atomspace->add_link(SEQUENTIAL_AND_LINK, std::move(dependency_link));
     
     return true;
 }
