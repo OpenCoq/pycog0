@@ -98,6 +98,7 @@ private:
     bool checkTaskDependencies(const Handle& task_atom);
     void updateTaskStatus(const Handle& task_atom, TaskStatus status);
     TruthValuePtr calculateGoalAchievement(const Handle& goal_atom);
+    Handle findTaskForGoal(const Handle& goal_atom);
 
 public:
     /**
