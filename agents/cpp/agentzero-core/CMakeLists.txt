@@ -45,20 +45,20 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# Source files (to be implemented)
+# Source files
 set(AGENTZERO_CORE_SOURCES
-    # src/AgentZeroCore.cpp
-    # src/CognitiveLoop.cpp  
-    # src/TaskManager.cpp
-    # src/KnowledgeIntegrator.cpp
+    src/AgentZeroCore.cpp
+    src/CognitiveLoop.cpp  
+    src/TaskManager.cpp
+    src/KnowledgeIntegrator.cpp
 )
 
-# Header files (to be implemented)
+# Header files
 set(AGENTZERO_CORE_HEADERS
-    # include/opencog/agentzero/AgentZeroCore.h
-    # include/opencog/agentzero/CognitiveLoop.h
-    # include/opencog/agentzero/TaskManager.h
-    # include/opencog/agentzero/KnowledgeIntegrator.h
+    include/opencog/agentzero/AgentZeroCore.h
+    include/opencog/agentzero/CognitiveLoop.h
+    include/opencog/agentzero/TaskManager.h
+    include/opencog/agentzero/KnowledgeIntegrator.h
 )
 
 # Create library (when source files exist)
@@ -101,4 +101,4 @@ endif()
 
 # Status message
 message(STATUS "Agent-Zero Core module configuration complete")
-message(STATUS "Note: Source files not yet implemented - see AGENT-ZERO-GENESIS.md roadmap")
+message(STATUS "Source files implemented - ready for build and testing")
