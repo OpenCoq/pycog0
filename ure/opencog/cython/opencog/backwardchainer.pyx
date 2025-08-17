@@ -36,8 +36,8 @@ cdef class BackwardChainer:
                                         deref(rbs.handle),
                                         deref(target.handle),
                                         c_vardecl,
-                                        <cAtomSpace*> (NULL if trace_as is None else trace_as.atomspace),
-                                        <cAtomSpace*> (NULL if control_as is None else control_as.atomspace),
+                                        (<cAtomSpace*>NULL if trace_as is None else trace_as.atomspace),
+                                        (<cAtomSpace*>NULL if control_as is None else control_as.atomspace),
                                         deref(focus_set.handle))
         self._as = _as
         self._trace_as = trace_as
@@ -48,8 +48,7 @@ cdef class BackwardChainer:
 
     def get_results(self):
         cdef cHandle res_handle = self.chainer.get_results()
-        cdef Atom result = Atom.createAtom(res_handle)
-        return result
+        return Atom.createAtom(res_handle)
 
     def __dealloc__(self):
         del self.chainer

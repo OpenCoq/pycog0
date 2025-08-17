@@ -354,20 +354,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -377,12 +397,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -586,20 +640,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -609,12 +683,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -817,20 +925,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -840,12 +968,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -971,20 +1133,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -994,12 +1176,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -1142,20 +1358,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -1165,12 +1401,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -1468,20 +1738,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -1491,12 +1781,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -1838,20 +2162,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -1861,12 +2205,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -2165,20 +2543,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -2188,12 +2586,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -2412,20 +2844,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -2435,12 +2887,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -2827,20 +3313,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -2850,12 +3356,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -3146,20 +3686,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -3169,12 +3729,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -3419,7 +4013,9 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose python3-rospy python3-catkin-tools python3-dev
+          sudo apt-get install -y build-essential cmake libboost-all-dev guile-3.0-dev cython3 python3-nose python3-dev
+          # Try to install ROS packages, but don't fail if they're not available
+          sudo apt-get install -y python3-rospy python3-catkin-tools || echo "ROS packages not available, continuing without them"
 
       - name: Install Cython
         run: python3 -m pip install --upgrade pip cython
@@ -3495,20 +4091,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -3518,12 +4134,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
@@ -3702,20 +4352,40 @@ jobs:
 
           # Set include directories
           set(ATOMSPACE_INCLUDE_DIRS "/usr/local/include")
+          set(ATOMSPACE_INCLUDE_DIR "/usr/local/include")
           set(AtomSpace_INCLUDE_DIRS "/usr/local/include")
+          set(AtomSpace_INCLUDE_DIR "/usr/local/include")
 
           # Set library directories and libraries
           set(ATOMSPACE_LIBRARY_DIRS "/usr/local/lib/opencog")
           set(AtomSpace_LIBRARY_DIRS "/usr/local/lib/opencog")
 
-          # Find the atomspace library
+# Find the atomspace libraries
           find_library(ATOMSPACE_LIBRARIES
               NAMES atomspace
               PATHS /usr/local/lib/opencog
               NO_DEFAULT_PATH
           )
+          
+          find_library(ATOMBASE_LIBRARIES
+              NAMES atombase
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+          
+          find_library(EXECUTION_LIBRARIES
+          
+          find_library(ATOMCORE_LIBRARIES
+              NAMES atomcore
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
+              NAMES execution
+              PATHS /usr/local/lib/opencog
+              NO_DEFAULT_PATH
+          )
 
-          set(AtomSpace_LIBRARIES \${ATOMSPACE_LIBRARIES})
+          set(AtomSpace_LIBRARIES ${ATOMSPACE_LIBRARIES})
 
           # Set other common variables
           set(ATOMSPACE_DATA_DIR "/usr/local/share/opencog")
@@ -3725,12 +4395,46 @@ jobs:
           set(ATOMSPACE_FOUND TRUE)
           set(AtomSpace_FOUND TRUE)
 
-          # Export targets (minimal)
+          # Export targets for all libraries that dependent packages expect
           if(NOT TARGET atomspace::atomspace)
               add_library(atomspace::atomspace SHARED IMPORTED)
               set_target_properties(atomspace::atomspace PROPERTIES
-                  IMPORTED_LOCATION "\${ATOMSPACE_LIBRARIES}"
-                  INTERFACE_INCLUDE_DIRECTORIES "\${ATOMSPACE_INCLUDE_DIRS}"
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          # Create imported targets for the individual libraries that CMakeLists.txt files reference
+          if(NOT TARGET atomspace)
+              add_library(atomspace SHARED IMPORTED)
+              set_target_properties(atomspace PROPERTIES
+                  IMPORTED_LOCATION "${ATOMSPACE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atombase)
+              add_library(atombase SHARED IMPORTED)
+              set_target_properties(atombase PROPERTIES
+                  IMPORTED_LOCATION "${ATOMBASE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+          if(NOT TARGET atomcore)
+              add_library(atomcore SHARED IMPORTED)
+              set_target_properties(atomcore PROPERTIES
+                  IMPORTED_LOCATION "${ATOMCORE_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
+              )
+          endif()
+          
+
+          if(NOT TARGET execution)
+              add_library(execution SHARED IMPORTED)
+              set_target_properties(execution PROPERTIES
+                  IMPORTED_LOCATION "${EXECUTION_LIBRARIES}"
+                  INTERFACE_INCLUDE_DIRECTORIES "${ATOMSPACE_INCLUDE_DIRS}"
               )
           endif()
 
