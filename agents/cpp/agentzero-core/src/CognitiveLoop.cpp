@@ -20,6 +20,8 @@
 
 #include "opencog/agentzero/CognitiveLoop.h"
 #include "opencog/agentzero/AgentZeroCore.h"
+#include "opencog/agentzero/TaskManager.h"
+#include "opencog/agentzero/KnowledgeIntegrator.h"
 
 using namespace opencog;
 using namespace opencog::agentzero;
@@ -267,7 +269,7 @@ bool CognitiveLoop::executePerceptionPhase()
         HandleSeq perception_link;
         perception_link.push_back(_agent_core->getAgentSelfAtom());
         perception_link.push_back(_perception_context);
-        _atomspace->add_link(EVALUATION_LINK, perception_link);
+        _atomspace->add_link(EVALUATION_LINK, std::move(perception_link));
         
         return true;
         
@@ -324,7 +326,7 @@ bool CognitiveLoop::executeActionPhase()
         HandleSeq action_link;
         action_link.push_back(_agent_core->getAgentSelfAtom());
         action_link.push_back(_action_context);
-        _atomspace->add_link(EVALUATION_LINK, action_link);
+        _atomspace->add_link(EVALUATION_LINK, std::move(action_link));
         
         return true;
         

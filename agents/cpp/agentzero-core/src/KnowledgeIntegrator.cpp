@@ -60,7 +60,7 @@ Handle KnowledgeIntegrator::addFact(const std::string& fact_description, Confide
     HandleSeq fact_link;
     fact_link.push_back(_knowledge_base);
     fact_link.push_back(fact_atom);
-    _atomspace->add_link(MEMBER_LINK, fact_link);
+    _atomspace->add_link(MEMBER_LINK, std::move(fact_link));
     
     return fact_atom;
 }
@@ -80,7 +80,7 @@ Handle KnowledgeIntegrator::addProcedure(const std::string& procedure_descriptio
         HandleSeq step_link;
         step_link.push_back(procedure_atom);
         step_link.push_back(step_atom);
-        _atomspace->add_link(SEQUENTIAL_AND_LINK, step_link);
+        _atomspace->add_link(SEQUENTIAL_AND_LINK, std::move(step_link));
     }
     
     // Set confidence
@@ -104,7 +104,7 @@ Handle KnowledgeIntegrator::addEpisode(const std::string& experience_description
         HandleSeq context_link;
         context_link.push_back(episode_atom);
         context_link.push_back(context);
-        _atomspace->add_link(EVALUATION_LINK, context_link);
+        _atomspace->add_link(EVALUATION_LINK, std::move(context_link));
     }
     
     // Set confidence
@@ -328,7 +328,7 @@ Handle KnowledgeIntegrator::createKnowledgeAtom(const std::string& content, Know
         HandleSeq cat_link;
         cat_link.push_back(cat_it->second);
         cat_link.push_back(knowledge_atom);
-        _atomspace->add_link(MEMBER_LINK, cat_link);
+        _atomspace->add_link(MEMBER_LINK, std::move(cat_link));
     }
     
     return knowledge_atom;
@@ -342,7 +342,7 @@ Handle KnowledgeIntegrator::findOrCreateConcept(const std::string& concept_name)
     }
     
     // Create new concept
-    Handle concept = _atomspace->add_node(CONCEPT_NODE, concept_name);
+    Handle concept = _atomspace->add_node(CONCEPT_NODE, std::string(concept_name));
     _concept_registry[concept_name] = concept;
     
     return concept;
@@ -362,7 +362,7 @@ void KnowledgeIntegrator::establishConceptRelation(const Handle& concept1, const
     HandleSeq relation_link;
     relation_link.push_back(concept1);
     relation_link.push_back(concept2);
-    _atomspace->add_link(link_type, relation_link);
+    _atomspace->add_link(link_type, std::move(relation_link));
 }
 
 std::vector<Handle> KnowledgeIntegrator::findRelatedKnowledge(const Handle& query_atom)
