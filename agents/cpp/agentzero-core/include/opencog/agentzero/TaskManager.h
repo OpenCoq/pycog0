@@ -98,6 +98,7 @@ private:
     bool checkTaskDependencies(const Handle& task_atom);
     void updateTaskStatus(const Handle& task_atom, TaskStatus status);
     TruthValuePtr calculateGoalAchievement(const Handle& goal_atom);
+    Handle findTaskForGoal(const Handle& goal_atom);
 
 public:
     /**
@@ -253,6 +254,13 @@ public:
      * @return JSON string with status details
      */
     std::string getStatusInfo() const;
+    
+    /**
+     * Get goal hierarchy information
+     * @param goal_atom The goal to analyze (defaults to current goal)
+     * @return JSON string with goal hierarchy details
+     */
+    std::string getGoalHierarchyInfo(const Handle& goal_atom = Handle::UNDEFINED) const;
     
     /**
      * Process task management for one cycle
