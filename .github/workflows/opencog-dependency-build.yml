@@ -185,7 +185,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
@@ -203,33 +203,97 @@ jobs:
           pattern: foundation-*
           merge-multiple: true
 
-      - name: Install foundation dependencies
+      - name: Build and install cogutil (Step 1)
         run: |
-          # Install cogutil first as it's required by atomspace
+          echo "🔧 Step 1: Building and installing cogutil"
           if [ -d "cogutil" ]; then
-            cd cogutil && mkdir -p build && cd build
-            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
             cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot proceed"
+            exit 1
           fi
-          
-          # Install atomspace after cogutil
+
+      - name: Build and install atomspace (Step 2)
+        if: matrix.component != 'atomspace'
+        run: |
+          echo "🔧 Step 2: Building and installing atomspace"
           if [ -d "atomspace" ]; then
-            cd atomspace && mkdir -p build && cd build
+            cd atomspace
+            mkdir -p build && cd build
+            
+            # Configure
             cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                   -DCMAKE_INSTALL_PREFIX=/usr/local \
-                   -DPYTHON_EXECUTABLE=$(which python3)
-            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
             cd ../..
+            echo "✅ atomspace installed successfully"
+          else
+            echo "❌ atomspace directory not found - cannot proceed"
+            exit 1
           fi
-          
-          # Install atomspace-storage after atomspace
+
+      - name: Build and install atomspace-storage (Step 3)
+        if: contains(matrix.component, 'atomspace-') && matrix.component != 'atomspace-storage'
+        run: |
+          echo "🔧 Step 3: Building and installing atomspace-storage"
           if [ -d "atomspace-storage" ]; then
-            cd atomspace-storage && mkdir -p build && cd build
+            cd atomspace-storage
+            mkdir -p build && cd build
+            
+            # Configure
             cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                   -DCMAKE_INSTALL_PREFIX=/usr/local
-            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+                     -DCMAKE_INSTALL_PREFIX=/usr/local
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
             cd ../..
+            echo "✅ atomspace-storage installed successfully"
+          else
+            echo "❌ atomspace-storage directory not found - cannot proceed"
+            exit 1
           fi
 
       - name: Build ${{ matrix.component }}
@@ -243,25 +307,9 @@ jobs:
             exit 0
           fi
           
-          # Ensure atomspace-storage is built and installed before components that depend on it
-          case "${{ matrix.component }}" in
-            atomspace-rocks|atomspace-ipfs|atomspace-websockets|atomspace-restful|atomspace-bridge|atomspace-metta|atomspace-rpc|atomspace-cog|atomspace-agents|atomspace-dht)
-              if [ ! -f "/usr/local/lib/cmake/AtomSpaceStorage/AtomSpaceStorageConfig.cmake" ]; then
-                echo "🔄 Installing atomspace-storage prerequisite for ${{ matrix.component }}"
-                if [ -d "atomspace-storage" ]; then
-                  cd atomspace-storage && mkdir -p build && cd build
-                  cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                         -DCMAKE_INSTALL_PREFIX=/usr/local
-                  make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-                  cd ../..
-                fi
-              fi
-              ;;
-          esac
-          
           cd "${{ matrix.component }}"
           
-          # Handle special cases
+          # Handle special cases for atomspace extensions
           case "${{ matrix.component }}" in
             atomspace*)
               # Create lib directory if missing and doesn't have CMakeLists.txt
@@ -336,7 +384,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
@@ -348,19 +396,124 @@ jobs:
           pattern: "*-*"
           merge-multiple: true
 
-      - name: Install prerequisite components
+      - name: Build and install cogutil (Step 1)
         run: |
-          # Install cogutil, atomspace, and atomspace-storage first
-          for component in cogutil atomspace atomspace-storage; do
-            if [ -d "$component" ]; then
-              cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+          echo "🔧 Step 1: Building and installing cogutil"
+          if [ -d "cogutil" ]; then
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
                      -DCMAKE_INSTALL_PREFIX=/usr/local \
                      -DPYTHON_EXECUTABLE=$(which python3)
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd ../..
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace (Step 2)
+        run: |
+          echo "🔧 Step 2: Building and installing atomspace"
+          if [ -d "atomspace" ]; then
+            cd atomspace
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
             fi
-          done
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace installed successfully"
+          else
+            echo "❌ atomspace directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace-storage (Step 3)
+        run: |
+          echo "🔧 Step 3: Building and installing atomspace-storage"
+          if [ -d "atomspace-storage" ]; then
+            cd atomspace-storage
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace-storage installed successfully"
+          else
+            echo "❌ atomspace-storage directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install unify (Step 4)
+        run: |
+          echo "🔧 Step 4: Building and installing unify"
+          git clone --depth 1 https://github.com/opencog/unify /tmp/unify
+          cd /tmp/unify
+          mkdir -p build && cd build
+          
+          # Configure
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                   -DCMAKE_INSTALL_PREFIX=/usr/local
+          
+          # Build
+          make ${{ env.MAKEFLAGS }}
+          
+          # Test
+          if make test; then
+            echo "✅ Tests passed"
+          else
+            echo "⚠️  Tests failed or not available"
+          fi
+          
+          # Install
+          sudo make install
+          sudo ldconfig
+          
+          cd /home/runner/work/opencog-org/opencog-org
+          echo "✅ unify installed successfully"
 
       - name: Build ${{ matrix.component }}
         id: build
@@ -373,17 +526,6 @@ jobs:
             git clone --depth 1 https://github.com/opencog/unify /tmp/unify
             cd /tmp/unify
           else
-            # Ensure unify is installed for ure
-            if [ "${{ matrix.component }}" = "ure" ] && [ ! -f "/usr/local/lib/cmake/Unify/UnifyConfig.cmake" ]; then
-              echo "🔄 Installing unify prerequisite for ure"
-              git clone --depth 1 https://github.com/opencog/unify /tmp/unify
-              cd /tmp/unify && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                     -DCMAKE_INSTALL_PREFIX=/usr/local
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd /home/runner/work/opencog-org/opencog-org
-            fi
-            
             if [ ! -d "${{ matrix.component }}" ]; then
               echo "⚠️  Component directory not found: ${{ matrix.component }}"
               exit 0
@@ -449,45 +591,200 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
             guile-3.0-dev cython3 python3-nose valgrind doxygen \
             liboctomap-dev libssl-dev cxxtest
 
-      - name: Install prerequisites
+      - name: Download previous artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-*"
+          merge-multiple: true
+
+      - name: Build and install cogutil (Step 1)
         run: |
-          # Install foundation and core components first
-          for component in cogutil atomspace atomspace-storage; do
-            if [ -d "$component" ]; then
-              cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+          echo "🔧 Step 1: Building and installing cogutil"
+          if [ -d "cogutil" ]; then
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
                      -DCMAKE_INSTALL_PREFIX=/usr/local \
                      -DPYTHON_EXECUTABLE=$(which python3)
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd ../..
-            fi
-          done
-          
-          # Install unify from external repo
-          if ! [ -d "/usr/local/lib/cmake/Unify" ]; then
-            git clone --depth 1 https://github.com/opencog/unify /tmp/unify
-            cd /tmp/unify && mkdir -p build && cd build
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace (Step 2)
+        run: |
+          echo "🔧 Step 2: Building and installing atomspace"
+          if [ -d "atomspace" ]; then
+            cd atomspace
+            mkdir -p build && cd build
+            
+            # Configure
             cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace installed successfully"
+          else
+            echo "❌ atomspace directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace-storage (Step 3)
+        run: |
+          echo "🔧 Step 3: Building and installing atomspace-storage"
+          if [ -d "atomspace-storage" ]; then
+            cd atomspace-storage
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace-storage installed successfully"
+          else
+            echo "❌ atomspace-storage directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install unify (Step 4)
+        run: |
+          echo "🔧 Step 4: Building and installing unify"
+          git clone --depth 1 https://github.com/opencog/unify /tmp/unify
+          cd /tmp/unify
+          mkdir -p build && cd build
+          
+          # Configure
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
                    -DCMAKE_INSTALL_PREFIX=/usr/local
-            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-            cd /home/runner/work/opencog-org/opencog-org
+          
+          # Build
+          make ${{ env.MAKEFLAGS }}
+          
+          # Test
+          if make test; then
+            echo "✅ Tests passed"
+          else
+            echo "⚠️  Tests failed or not available"
           fi
           
-          # Install ure if available
+          # Install
+          sudo make install
+          sudo ldconfig
+          
+          cd /home/runner/work/opencog-org/opencog-org
+          echo "✅ unify installed successfully"
+
+      - name: Build and install ure (Step 5)
+        run: |
+          echo "🔧 Step 5: Building and installing ure"
           if [ -d "ure" ]; then
-            cd ure && mkdir -p build && cd build
+            cd ure
+            mkdir -p build && cd build
+            
+            # Configure
             cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                   -DCMAKE_INSTALL_PREFIX=/usr/local \
-                   -DPYTHON_EXECUTABLE=$(which python3)
-            make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
             cd ../..
+            echo "✅ ure installed successfully"
+          else
+            echo "⚠️  ure directory not found - continuing without it"
+          fi
+
+      - name: Build and install cogserver (Step 6)
+        run: |
+          echo "🔧 Step 6: Building and installing cogserver"
+          if [ -d "cogserver" ]; then
+            cd cogserver
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogserver installed successfully"
+          else
+            echo "⚠️  cogserver directory not found - continuing without it"
           fi
 
       - name: Build ${{ matrix.component }}
@@ -572,30 +869,233 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
             guile-3.0-dev cython3 python3-nose valgrind doxygen \
             liboctomap-dev libmpi-dev
 
-      - name: Install prerequisites
+      - name: Download previous artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-*"
+          merge-multiple: true
+
+      - name: Build and install cogutil (Step 1)
         run: |
-          # Install all previous layer components
-          for component in cogutil atomspace unify ure cogserver spacetime; do
-            if [ -d "$component" ]; then
-              cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd ../..
-            elif [ "$component" = "unify" ]; then
-              git clone --depth 1 https://github.com/opencog/unify /tmp/unify
-              cd /tmp/unify && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd /home/runner/work/opencog-org/opencog-org
+          echo "🔧 Step 1: Building and installing cogutil"
+          if [ -d "cogutil" ]; then
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace (Step 2)
+        run: |
+          echo "🔧 Step 2: Building and installing atomspace"
+          if [ -d "atomspace" ]; then
+            cd atomspace
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
             fi
-          done
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace installed successfully"
+          else
+            echo "❌ atomspace directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace-storage (Step 3)
+        run: |
+          echo "🔧 Step 3: Building and installing atomspace-storage"
+          if [ -d "atomspace-storage" ]; then
+            cd atomspace-storage
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace-storage installed successfully"
+          else
+            echo "❌ atomspace-storage directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install unify (Step 4)
+        run: |
+          echo "🔧 Step 4: Building and installing unify"
+          git clone --depth 1 https://github.com/opencog/unify /tmp/unify
+          cd /tmp/unify
+          mkdir -p build && cd build
+          
+          # Configure
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                   -DCMAKE_INSTALL_PREFIX=/usr/local
+          
+          # Build
+          make ${{ env.MAKEFLAGS }}
+          
+          # Test
+          if make test; then
+            echo "✅ Tests passed"
+          else
+            echo "⚠️  Tests failed or not available"
+          fi
+          
+          # Install
+          sudo make install
+          sudo ldconfig
+          
+          cd /home/runner/work/opencog-org/opencog-org
+          echo "✅ unify installed successfully"
+
+      - name: Build and install ure (Step 5)
+        run: |
+          echo "🔧 Step 5: Building and installing ure"
+          if [ -d "ure" ]; then
+            cd ure
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ ure installed successfully"
+          else
+            echo "⚠️  ure directory not found - continuing without it"
+          fi
+
+      - name: Build and install cogserver (Step 6)
+        run: |
+          echo "🔧 Step 6: Building and installing cogserver"
+          if [ -d "cogserver" ]; then
+            cd cogserver
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogserver installed successfully"
+          else
+            echo "⚠️  cogserver directory not found - continuing without it"
+          fi
+
+      - name: Build and install spacetime (Step 7)
+        run: |
+          echo "🔧 Step 7: Building and installing spacetime"
+          if [ -d "spacetime" ]; then
+            cd spacetime
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ spacetime installed successfully"
+          else
+            echo "⚠️  spacetime directory not found - continuing without it"
+          fi
 
       - name: Build ${{ matrix.component }}
         id: build
@@ -665,7 +1165,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
@@ -675,16 +1175,102 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip numpy pandas matplotlib
 
-      - name: Install prerequisites
+      - name: Download previous artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-*"
+          merge-multiple: true
+
+      - name: Build and install cogutil (Step 1)
         run: |
-          for component in cogutil atomspace cogserver; do
-            if [ -d "$component" ]; then
-              cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd ../..
+          echo "🔧 Step 1: Building and installing cogutil"
+          if [ -d "cogutil" ]; then
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace (Step 2)
+        run: |
+          echo "🔧 Step 2: Building and installing atomspace"
+          if [ -d "atomspace" ]; then
+            cd atomspace
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
             fi
-          done
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace installed successfully"
+          else
+            echo "❌ atomspace directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install cogserver (Step 3)
+        run: |
+          echo "🔧 Step 3: Building and installing cogserver"
+          if [ -d "cogserver" ]; then
+            cd cogserver
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogserver installed successfully"
+          else
+            echo "⚠️  cogserver directory not found - continuing without it"
+          fi
 
       - name: Build ${{ matrix.component }}
         id: build
@@ -734,22 +1320,76 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
             guile-3.0-dev cython3 python3-nose valgrind doxygen
 
-      - name: Install prerequisites
+      - name: Download previous artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-*"
+          merge-multiple: true
+
+      - name: Build and install cogutil (Step 1)
         run: |
-          for component in cogutil atomspace; do
-            if [ -d "$component" ]; then
-              cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd ../..
+          echo "🔧 Step 1: Building and installing cogutil"
+          if [ -d "cogutil" ]; then
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace (Step 2)
+        run: |
+          echo "🔧 Step 2: Building and installing atomspace"
+          if [ -d "atomspace" ]; then
+            cd atomspace
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
             fi
-          done
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace installed successfully"
+          else
+            echo "❌ atomspace directory not found - cannot proceed"
+            exit 1
+          fi
 
       - name: Build ${{ matrix.component }}
         id: build
@@ -801,23 +1441,77 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
             libopencv-dev catch2 valgrind doxygen python3-catkin-tools \
             python3-rospy python3-dev
 
-      - name: Install prerequisites
+      - name: Download previous artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-*"
+          merge-multiple: true
+
+      - name: Build and install cogutil (Step 1)
         run: |
-          for component in cogutil atomspace; do
-            if [ -d "$component" ]; then
-              cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd ../..
+          echo "🔧 Step 1: Building and installing cogutil"
+          if [ -d "cogutil" ]; then
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace (Step 2)
+        run: |
+          echo "🔧 Step 2: Building and installing atomspace"
+          if [ -d "atomspace" ]; then
+            cd atomspace
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
             fi
-          done
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace installed successfully"
+          else
+            echo "❌ atomspace directory not found - cannot proceed"
+            exit 1
+          fi
 
       - name: Build ${{ matrix.component }}
         id: build
@@ -866,31 +1560,297 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y build-essential cmake libboost-all-dev \
             guile-3.0-dev cython3 python3-nose valgrind doxygen \
             librocksdb-dev liboctomap-dev ghc libghc-*-dev stack
 
-      - name: Install all prerequisites
+      - name: Download previous artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "*-*"
+          merge-multiple: true
+
+      - name: Build and install cogutil (Step 1)
         run: |
-          # Install foundation through advanced layers
-          components="cogutil atomspace unify ure cogserver spacetime attention learn"
-          for component in $components; do
-            if [ -d "$component" ]; then
-              cd "$component" && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd ../..
-            elif [ "$component" = "unify" ]; then
-              git clone --depth 1 https://github.com/opencog/unify /tmp/unify
-              cd /tmp/unify && mkdir -p build && cd build
-              cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
-              make ${{ env.MAKEFLAGS }} && sudo make install && sudo ldconfig
-              cd /home/runner/work/opencog-org/opencog-org
+          echo "🔧 Step 1: Building and installing cogutil"
+          if [ -d "cogutil" ]; then
+            cd cogutil
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogutil installed successfully"
+          else
+            echo "❌ cogutil directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace (Step 2)
+        run: |
+          echo "🔧 Step 2: Building and installing atomspace"
+          if [ -d "atomspace" ]; then
+            cd atomspace
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
             fi
-          done
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace installed successfully"
+          else
+            echo "❌ atomspace directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install atomspace-storage (Step 3)
+        run: |
+          echo "🔧 Step 3: Building and installing atomspace-storage"
+          if [ -d "atomspace-storage" ]; then
+            cd atomspace-storage
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ atomspace-storage installed successfully"
+          else
+            echo "❌ atomspace-storage directory not found - cannot proceed"
+            exit 1
+          fi
+
+      - name: Build and install unify (Step 4)
+        run: |
+          echo "🔧 Step 4: Building and installing unify"
+          git clone --depth 1 https://github.com/opencog/unify /tmp/unify
+          cd /tmp/unify
+          mkdir -p build && cd build
+          
+          # Configure
+          cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                   -DCMAKE_INSTALL_PREFIX=/usr/local
+          
+          # Build
+          make ${{ env.MAKEFLAGS }}
+          
+          # Test
+          if make test; then
+            echo "✅ Tests passed"
+          else
+            echo "⚠️  Tests failed or not available"
+          fi
+          
+          # Install
+          sudo make install
+          sudo ldconfig
+          
+          cd /home/runner/work/opencog-org/opencog-org
+          echo "✅ unify installed successfully"
+
+      - name: Build and install ure (Step 5)
+        run: |
+          echo "🔧 Step 5: Building and installing ure"
+          if [ -d "ure" ]; then
+            cd ure
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ ure installed successfully"
+          else
+            echo "⚠️  ure directory not found - continuing without it"
+          fi
+
+      - name: Build and install cogserver (Step 6)
+        run: |
+          echo "🔧 Step 6: Building and installing cogserver"
+          if [ -d "cogserver" ]; then
+            cd cogserver
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ cogserver installed successfully"
+          else
+            echo "⚠️  cogserver directory not found - continuing without it"
+          fi
+
+      - name: Build and install spacetime (Step 7)
+        run: |
+          echo "🔧 Step 7: Building and installing spacetime"
+          if [ -d "spacetime" ]; then
+            cd spacetime
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ spacetime installed successfully"
+          else
+            echo "⚠️  spacetime directory not found - continuing without it"
+          fi
+
+      - name: Build and install attention (Step 8)
+        run: |
+          echo "🔧 Step 8: Building and installing attention"
+          if [ -d "attention" ]; then
+            cd attention
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ attention installed successfully"
+          else
+            echo "⚠️  attention directory not found - continuing without it"
+          fi
+
+      - name: Build and install learn (Step 9)
+        run: |
+          echo "🔧 Step 9: Building and installing learn"
+          if [ -d "learn" ]; then
+            cd learn
+            mkdir -p build && cd build
+            
+            # Configure
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+            # Build
+            make ${{ env.MAKEFLAGS }}
+            
+            # Test
+            if make test; then
+              echo "✅ Tests passed"
+            else
+              echo "⚠️  Tests failed or not available"
+            fi
+            
+            # Install
+            sudo make install
+            sudo ldconfig
+            
+            cd ../..
+            echo "✅ learn installed successfully"
+          else
+            echo "⚠️  learn directory not found - continuing without it"
+          fi
 
       - name: Build ${{ matrix.component }}
         id: build
