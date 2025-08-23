@@ -22,6 +22,12 @@ write_basic_package_version_file(
 	COMPATIBILITY SameMajorVersion
 )
 
+# Export the targets
+install(EXPORT AtomSpaceTargets
+	FILE AtomSpaceTargets.cmake
+	DESTINATION ${ATOMSPACE_CMAKE_DIR}
+)
+
 INSTALL(FILES
 	${CMAKE_CURRENT_BINARY_DIR}/AtomSpaceConfigVersion.cmake
 	${CMAKE_CURRENT_BINARY_DIR}/AtomSpaceConfig.cmake
