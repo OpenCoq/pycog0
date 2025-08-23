@@ -1,23 +1,23 @@
 name: 🤖 VM-Daemon-Sys MLOps Orchestration
 
 "on":
-  push:
-    branches: [ main, develop ]
-    paths:
-      - 'aar_core/**'
-      - 'echo.self/**'
-      - 'echo.kern/**'
-      - 'echo.rkwv/**'
-      - '**/vm-daemon-sys/**'
-      - '.github/workflows/vm-daemon-mlops.yml'
-  pull_request:
-    branches: [ main, develop ]
-    paths:
-      - 'aar_core/**'
-      - 'echo.self/**'
-      - 'echo.kern/**'
-      - 'echo.rkwv/**'
-      - '**/vm-daemon-sys/**'
+#  push:
+#    branches: [ main, develop ]
+#    paths:
+#      - 'aar_core/**'
+#      - 'echo.self/**'
+#      - 'echo.kern/**'
+#      - 'echo.rkwv/**'
+#      - '**/vm-daemon-sys/**'
+#      - '.github/workflows/vm-daemon-mlops.yml'
+#  pull_request:
+#    branches: [ main, develop ]
+#    paths:
+#      - 'aar_core/**'
+#      - 'echo.self/**'
+#      - 'echo.kern/**'
+#      - 'echo.rkwv/**'
+#      - '**/vm-daemon-sys/**'
   workflow_dispatch:
     inputs:
       deployment_mode:
