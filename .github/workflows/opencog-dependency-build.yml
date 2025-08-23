@@ -159,9 +159,9 @@ jobs:
           name: foundation-${{ matrix.component }}
           path: artifacts/
 
-  # ==== CORE LAYER ====
-  core:
-    name: "Core: ${{ matrix.component }}"
+  # ==== ATOMSP LAYER ====
+  atomsp:
+    name: "Atomsp: ${{ matrix.component }}"
     runs-on: ubuntu-latest
     needs: foundation
     continue-on-error: true
@@ -170,6 +170,149 @@ jobs:
       matrix:
         component:
           - atomspace
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake libboost-all-dev \
+            guile-3.0-dev cython3 python3-nose valgrind doxygen \
+            librocksdb-dev libcpprest-dev libssl-dev pkg-config \
+            libjsoncpp-dev libzmq3-dev libtbb-dev libpqxx-dev \
+            unixodbc-dev cxxtest
+
+      - name: Install Python dependencies
+        run: python3 -m pip install --upgrade pip cython
+
+      - name: Download foundation artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: foundation-*
+          merge-multiple: true
+
+#      - name: Clean up previous CMakeCache
+#        run: rm -f $GITHUB_WORKSPACE/cogutil/CMakeCache.txt
+
+      - name: build & install cogutil
+        run: |
+          mkdir -p cogutil/build
+          cd cogutil/build
+          cmake ..
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+          cd ../..
+
+#      - name: Build and install cogutil (Step 1)
+#        run: |
+#          echo "🔧 Step 1: Building and installing cogutil"
+#          if [ -d "cogutil" ]; then
+#            cd cogutil
+#            mkdir -p build && cd build
+            
+#            # Configure
+#            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+#                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+#                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+#            # Build
+#            make ${{ env.MAKEFLAGS }}
+            
+#            # Install
+#            sudo make install
+#            sudo ldconfig
+            
+#            cd ../..
+#            echo "✅ cogutil installed successfully"
+#          else
+#            echo "❌ cogutil directory not found - cannot proceed"
+#            exit 1
+#          fi
+
+      - name: Build ${{ matrix.component }}
+        id: build
+        continue-on-error: true
+        run: |
+          echo "🔧 Building atomspace component: ${{ matrix.component }}"
+          
+          if [ ! -d "${{ matrix.component }}" ]; then
+            echo "⚠️  Component directory not found: ${{ matrix.component }}"
+            exit 0
+          fi
+          
+          cd "${{ matrix.component }}"
+          
+          # Handle special cases for atomspace extensions
+          case "${{ matrix.component }}" in
+            atomspace*)
+              # Create lib directory if missing and doesn't have CMakeLists.txt
+              if [ ! -d "lib" ]; then
+                mkdir -p lib && echo "# Placeholder" > lib/CMakeLists.txt
+              elif [ ! -f "lib/CMakeLists.txt" ]; then
+                echo "# Placeholder" > lib/CMakeLists.txt
+              fi
+              ;;
+          esac
+          
+          mkdir -p build && cd build
+          
+          if cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+                     -DPYTHON_EXECUTABLE=$(which python3); then
+            echo "✅ CMake configuration successful"
+          else
+            echo "❌ CMake configuration failed"
+            exit 1
+          fi
+          
+          if make ${{ env.MAKEFLAGS }}; then
+            echo "✅ Build successful"
+          else
+            echo "❌ Build failed"
+            exit 1
+          fi
+          
+          if make test; then
+            echo "✅ Tests passed"
+          else
+            echo "⚠️  Tests failed or not available"
+          fi
+          
+          if sudo make install; then
+            echo "✅ Installation successful"
+            sudo ldconfig
+          else
+            echo "❌ Installation failed"
+            exit 1
+          fi
+
+      - name: Create build artifact
+        if: always()
+        run: |
+          mkdir -p artifacts/${{ matrix.component }}
+          echo "Component: ${{ matrix.component }}" > artifacts/${{ matrix.component }}/build-info.txt
+          echo "Status: ${{ steps.build.outcome }}" >> artifacts/${{ matrix.component }}/build-info.txt
+          echo "Dependencies: foundation" >> artifacts/${{ matrix.component }}/build-info.txt
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: atomsp-${{ matrix.component }}
+          path: artifacts/
+
+  # ==== CORE LAYER ====
+  core:
+    name: "Core: ${{ matrix.component }}"
+    runs-on: ubuntu-latest
+    needs: atomsp
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        component:
           - atomspace-storage
           - atomspace-rocks
           - atomspace-ipfs
@@ -203,98 +346,121 @@ jobs:
           pattern: foundation-*
           merge-multiple: true
 
-      - name: Build and install cogutil (Step 1)
-        run: |
-          echo "🔧 Step 1: Building and installing cogutil"
-          if [ -d "cogutil" ]; then
-            cd cogutil
-            mkdir -p build && cd build
-            
-            # Configure
-            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                     -DCMAKE_INSTALL_PREFIX=/usr/local \
-                     -DPYTHON_EXECUTABLE=$(which python3)
-            
-            # Build
-            make ${{ env.MAKEFLAGS }}
-            
-            # Install
-            sudo make install
-            sudo ldconfig
-            
-            cd ../..
-            echo "✅ cogutil installed successfully"
-          else
-            echo "❌ cogutil directory not found - cannot proceed"
-            exit 1
-          fi
+#      - name: Clean up previous CMakeCache
+#        run: rm -f $GITHUB_WORKSPACE/cogutil/CMakeCache.txt
 
-      - name: Build and install atomspace (Step 2)
-        if: matrix.component != 'atomspace'
+      - name: build & install cogutil
         run: |
-          echo "🔧 Step 2: Building and installing atomspace"
-          if [ -d "atomspace" ]; then
-            cd atomspace
-            mkdir -p build && cd build
-            
-            # Configure
-            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                     -DCMAKE_INSTALL_PREFIX=/usr/local \
-                     -DPYTHON_EXECUTABLE=$(which python3)
-            
-            # Build
-            make ${{ env.MAKEFLAGS }}
-            
-            # Test
-            if make test; then
-              echo "✅ Tests passed"
-            else
-              echo "⚠️  Tests failed or not available"
-            fi
-            
-            # Install
-            sudo make install
-            sudo ldconfig
-            
-            cd ../..
-            echo "✅ atomspace installed successfully"
-          else
-            echo "❌ atomspace directory not found - cannot proceed"
-            exit 1
-          fi
+          mkdir -p cogutil/build
+          cd cogutil/build
+          cmake ..
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+          cd ../..
 
-      - name: Build and install atomspace-storage (Step 3)
-        if: contains(matrix.component, 'atomspace-') && matrix.component != 'atomspace-storage'
+      - name: build & install atomspace
         run: |
-          echo "🔧 Step 3: Building and installing atomspace-storage"
-          if [ -d "atomspace-storage" ]; then
-            cd atomspace-storage
-            mkdir -p build && cd build
+          mkdir -p atomspace/build
+          cd atomspace/build
+          cmake ..
+          make -j$(nproc)
+          sudo make install
+          sudo ldconfig
+          cd ../..
+
+#      - name: Build and install cogutil (Step 1)
+#        run: |
+#          echo "🔧 Step 1: Building and installing cogutil"
+#          if [ -d "cogutil" ]; then
+#            cd cogutil
+#            mkdir -p build && cd build
             
-            # Configure
-            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
-                     -DCMAKE_INSTALL_PREFIX=/usr/local
+#            # Configure
+#            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+#                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+#                     -DPYTHON_EXECUTABLE=$(which python3)
             
-            # Build
-            make ${{ env.MAKEFLAGS }}
+#            # Build
+#            make ${{ env.MAKEFLAGS }}
             
-            # Test
-            if make test; then
-              echo "✅ Tests passed"
-            else
-              echo "⚠️  Tests failed or not available"
-            fi
+#            # Install
+#            sudo make install
+#            sudo ldconfig
             
-            # Install
-            sudo make install
-            sudo ldconfig
+#            cd ../..
+#            echo "✅ cogutil installed successfully"
+#          else
+#            echo "❌ cogutil directory not found - cannot proceed"
+#            exit 1
+#          fi
+
+#      - name: Build and install atomspace (Step 2)
+#        if: matrix.component != 'atomspace'
+#        run: |
+#          echo "🔧 Step 2: Building and installing atomspace"
+#          if [ -d "atomspace" ]; then
+#            cd atomspace
+#            mkdir -p build && cd build
             
-            cd ../..
-            echo "✅ atomspace-storage installed successfully"
-          else
-            echo "❌ atomspace-storage directory not found - cannot proceed"
-            exit 1
-          fi
+#            # Configure
+#            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+#                     -DCMAKE_INSTALL_PREFIX=/usr/local \
+#                     -DPYTHON_EXECUTABLE=$(which python3)
+            
+#            # Build
+#            make ${{ env.MAKEFLAGS }}
+            
+#            # Test
+#            if make test; then
+#              echo "✅ Tests passed"
+#            else
+#              echo "⚠️  Tests failed or not available"
+#            fi
+            
+#            # Install
+#            sudo make install
+#            sudo ldconfig
+            
+#            cd ../..
+#            echo "✅ atomspace installed successfully"
+#          else
+#            echo "❌ atomspace directory not found - cannot proceed"
+#            exit 1
+#          fi
+
+#      - name: Build and install atomspace-storage (Step 3)
+#        if: contains(matrix.component, 'atomspace-') && matrix.component != 'atomspace-storage'
+#        run: |
+#          echo "🔧 Step 3: Building and installing atomspace-storage"
+#          if [ -d "atomspace-storage" ]; then
+#            cd atomspace-storage
+#            mkdir -p build && cd build
+#            
+#            # Configure
+#            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+#                     -DCMAKE_INSTALL_PREFIX=/usr/local
+            
+#            # Build
+#            make ${{ env.MAKEFLAGS }}
+            
+#            # Test
+#            if make test; then
+#              echo "✅ Tests passed"
+#            else
+#              echo "⚠️  Tests failed or not available"
+#            fi
+            
+#            # Install
+#            sudo make install
+#            sudo ldconfig
+            
+#            cd ../..
+#            echo "✅ atomspace-storage installed successfully"
+#          else
+#            echo "❌ atomspace-storage directory not found - cannot proceed"
+#            exit 1
+#          fi
 
       - name: Build ${{ matrix.component }}
         id: build
