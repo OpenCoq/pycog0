@@ -490,7 +490,7 @@ jobs:
   # ==== Server Infrastructure ====
   cogserver:
     runs-on: ubuntu-latest
-    needs: [atomspace]
+    needs: [atomspace-storage]
     steps:
       - uses: actions/checkout@v4
       
@@ -572,7 +572,7 @@ jobs:
   # ==== Spatiotemporal ====
   spacetime:
     runs-on: ubuntu-latest
-    needs: [cogutil]
+    needs: [cogserver]
     steps:
       - uses: actions/checkout@v4
 
@@ -632,7 +632,7 @@ jobs:
   # ==== Attention ====
   attention:
     runs-on: ubuntu-latest
-    needs: [atomspace]
+    needs: [ure]
     steps:
       - uses: actions/checkout@v4
 
