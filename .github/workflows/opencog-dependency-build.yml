@@ -159,9 +159,9 @@ jobs:
           name: foundation-${{ matrix.component }}
           path: artifacts/
 
-  # ==== ATOMSP LAYER ====
-  atomsp:
-    name: "Atomsp: ${{ matrix.component }}"
+  # ==== CORE LAYER ====
+  core:
+    name: "Core: ${{ matrix.component }}"
     runs-on: ubuntu-latest
     needs: foundation
     continue-on-error: true
@@ -300,14 +300,14 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: atomsp-${{ matrix.component }}
+          name: core-${{ matrix.component }}
           path: artifacts/
 
-  # ==== CORE LAYER ====
-  core:
-    name: "Core: ${{ matrix.component }}"
+  # ==== EXTENDED CORE LAYER ====
+  extended-core:
+    name: "Extended Core: ${{ matrix.component }}"
     runs-on: ubuntu-latest
-    needs: atomsp
+    needs: core
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -531,14 +531,14 @@ jobs:
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: core-${{ matrix.component }}
+          name: extended-core-${{ matrix.component }}
           path: artifacts/
 
   # ==== LOGIC LAYER ====
   logic:
     name: "Logic: ${{ matrix.component }}"
     runs-on: ubuntu-latest
-    needs: [foundation, core]
+    needs: [foundation, core, extended-core]
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -741,7 +741,7 @@ jobs:
   cognitive:
     name: "Cognitive: ${{ matrix.component }}"
     runs-on: ubuntu-latest
-    needs: [foundation, core, logic]
+    needs: [foundation, core, extended-core, logic]
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -1021,7 +1021,7 @@ jobs:
   advanced:
     name: "Advanced: ${{ matrix.component }}"
     runs-on: ubuntu-latest
-    needs: [foundation, core, logic, cognitive]
+    needs: [foundation, core, extended-core, logic, cognitive]
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -1318,7 +1318,7 @@ jobs:
   learning:
     name: "Learning: ${{ matrix.component }}"
     runs-on: ubuntu-latest
-    needs: [foundation, core, logic, cognitive]
+    needs: [foundation, core, extended-core, logic, cognitive]
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -1473,7 +1473,7 @@ jobs:
   language:
     name: "Language: ${{ matrix.component }}"
     runs-on: ubuntu-latest
-    needs: [foundation, core]
+    needs: [foundation, core, extended-core]
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -1591,7 +1591,7 @@ jobs:
   robotics:
     name: "Robotics: ${{ matrix.component }}"
     runs-on: ubuntu-latest
-    needs: [foundation, core]
+    needs: [foundation, core, extended-core]
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -1715,7 +1715,7 @@ jobs:
   integration:
     name: "Integration: ${{ matrix.component }}"
     runs-on: ubuntu-latest
-    needs: [foundation, core, logic, cognitive, advanced, learning]
+    needs: [foundation, core, extended-core, logic, cognitive, advanced, learning]
     continue-on-error: true
     strategy:
       fail-fast: false
@@ -2064,7 +2064,7 @@ jobs:
   build-summary:
     name: "Build Summary & Dependency Discovery"
     runs-on: ubuntu-latest
-    needs: [foundation, core, logic, cognitive, advanced, learning, language, robotics, integration]
+    needs: [foundation, core, extended-core, logic, cognitive, advanced, learning, language, robotics, integration]
     if: always()
     steps:
       - name: Checkout repository
@@ -2086,7 +2086,7 @@ jobs:
           echo "" >> build-summary.md
           
           # Count successes and failures by category
-          categories="foundation core logic cognitive advanced learning language robotics integration"
+          categories="foundation core extended-core logic cognitive advanced learning language robotics integration"
           total_success=0
           total_failure=0
           
