@@ -1,5 +1,5 @@
 from cython.operator cimport dereference as deref
-from opencog.atomspace cimport Atom
+from opencog.atomspace cimport Atom, cAtomSpace
 from opencog.atomspace cimport cHandle, AtomSpace, TruthValue
 from opencog.atomspace import types
 from ure cimport cBackwardChainer
@@ -36,8 +36,8 @@ cdef class BackwardChainer:
                                         deref(rbs.handle),
                                         deref(target.handle),
                                         c_vardecl,
-                                        (<cAtomSpace*>NULL if trace_as is None else trace_as.atomspace),
-                                        (<cAtomSpace*>NULL if control_as is None else control_as.atomspace),
+                                        <cAtomSpace*>(NULL if trace_as is None else trace_as.atomspace),
+                                        <cAtomSpace*>(NULL if control_as is None else control_as.atomspace),
                                         deref(focus_set.handle))
         self._as = _as
         self._trace_as = trace_as
