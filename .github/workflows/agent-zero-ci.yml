@@ -123,6 +123,8 @@ jobs:
             /usr/local/lib
             /usr/local/include
             /usr/local/lib/pkgconfig
+            /usr/local/share/pkgconfig
+            /usr/lib/pkgconfig
           key: opencog-deps-${{ runner.os }}-${{ github.sha }}
 
   # ==== Build Agent-Zero Core ====
@@ -162,10 +164,15 @@ jobs:
             /usr/local/lib
             /usr/local/include
             /usr/local/lib/pkgconfig
+            /usr/local/share/pkgconfig
+            /usr/lib/pkgconfig
           key: opencog-deps-${{ runner.os }}-${{ github.sha }}
 
-      - name: Update library cache
-        run: sudo ldconfig
+      - name: Setup pkg-config environment
+        run: |
+          sudo ldconfig
+          echo "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+          pkg-config --list-all | grep -E "cogutil|atomspace|cogserver" || echo "OpenCog packages not found in pkg-config"
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -245,10 +252,15 @@ jobs:
             /usr/local/lib
             /usr/local/include
             /usr/local/lib/pkgconfig
+            /usr/local/share/pkgconfig
+            /usr/lib/pkgconfig
           key: opencog-deps-${{ runner.os }}-${{ github.sha }}
 
-      - name: Update library cache
-        run: sudo ldconfig
+      - name: Setup pkg-config environment
+        run: |
+          sudo ldconfig
+          echo "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+          pkg-config --list-all | grep -E "cogutil|atomspace|cogserver" || echo "OpenCog packages not found in pkg-config"
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
@@ -329,10 +341,15 @@ jobs:
             /usr/local/lib
             /usr/local/include
             /usr/local/lib/pkgconfig
+            /usr/local/share/pkgconfig
+            /usr/lib/pkgconfig
           key: opencog-deps-${{ runner.os }}-${{ github.sha }}
 
-      - name: Update library cache
-        run: sudo ldconfig
+      - name: Setup pkg-config environment
+        run: |
+          sudo ldconfig
+          echo "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH" >> $GITHUB_ENV
+          pkg-config --list-all | grep -E "cogutil|atomspace|cogserver" || echo "OpenCog packages not found in pkg-config"
 
       - name: Install Python dependencies for validation
         run: |
