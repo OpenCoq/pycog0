@@ -81,9 +81,13 @@ jobs:
           mkdir -p build && cd build
           cmake .. \
             -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/opencog-install \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           make -j$(nproc)
+          make install
+          
+          # Also install to system for subsequent builds in this job
           sudo make install
           sudo ldconfig
 
@@ -98,9 +102,13 @@ jobs:
           mkdir -p build && cd build
           cmake .. \
             -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/opencog-install \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           make -j$(nproc)
+          make install
+          
+          # Also install to system for subsequent builds in this job
           sudo make install
           sudo ldconfig
 
@@ -110,22 +118,22 @@ jobs:
           mkdir -p build && cd build
           cmake .. \
             -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+            -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/opencog-install \
             -DCMAKE_C_COMPILER_LAUNCHER=ccache \
             -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           make -j$(nproc)
+          make install
+          
+          # Also install to system for subsequent builds in this job
           sudo make install
           sudo ldconfig
 
-      - name: Cache OpenCog installation
-        uses: actions/cache/save@v4
+      - name: Upload OpenCog dependencies as artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: |
-            /usr/local/lib
-            /usr/local/include
-            /usr/local/lib/pkgconfig
-            /usr/local/share/pkgconfig
-            /usr/lib/pkgconfig
-          key: opencog-deps-${{ runner.os }}-${{ github.sha }}
+          name: opencog-dependencies-${{ runner.os }}
+          path: ${{ github.workspace }}/opencog-install/
+          retention-days: 1
 
   # ==== Build Agent-Zero Core ====
   build-agent-zero-core:
@@ -157,19 +165,22 @@ jobs:
             python3-dev \
             python3-pip
 
-      - name: Restore OpenCog dependencies cache
-        uses: actions/cache/restore@v4
+      - name: Download OpenCog dependencies artifact
+        uses: actions/download-artifact@v4
         with:
-          path: |
-            /usr/local/lib
-            /usr/local/include
-            /usr/local/lib/pkgconfig
-            /usr/local/share/pkgconfig
-            /usr/lib/pkgconfig
-          key: opencog-deps-${{ runner.os }}-${{ github.sha }}
+          name: opencog-dependencies-${{ runner.os }}
+          path: ${{ github.workspace }}/opencog-install
+        continue-on-error: true
 
-      - name: Rebuild OpenCog dependencies if cache missing
+      - name: Install OpenCog dependencies from artifact or rebuild if missing
         run: |
+          # Install from artifact if available
+          if [ -d "${{ github.workspace }}/opencog-install" ] && [ "$(ls -A ${{ github.workspace }}/opencog-install)" ]; then
+            echo "📦 Installing OpenCog dependencies from artifact..."
+            sudo cp -r ${{ github.workspace }}/opencog-install/* /usr/local/
+            sudo ldconfig
+          fi
+          
           # Check if OpenCog libraries are available
           sudo ldconfig
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -180,7 +191,7 @@ jobs:
           if ! pkg-config --exists cogserver 2>/dev/null; then MISSING=1; fi
           
           if [ $MISSING -eq 1 ]; then
-            echo "🔧 OpenCog dependencies not found in cache - rebuilding from source"
+            echo "🔧 OpenCog dependencies not found in artifact - rebuilding from source"
             
             # Install additional build dependencies
             sudo apt-get install -y valgrind doxygen
@@ -304,19 +315,22 @@ jobs:
             python3-dev \
             python3-pip
 
-      - name: Restore OpenCog dependencies cache
-        uses: actions/cache/restore@v4
+      - name: Download OpenCog dependencies artifact
+        uses: actions/download-artifact@v4
         with:
-          path: |
-            /usr/local/lib
-            /usr/local/include
-            /usr/local/lib/pkgconfig
-            /usr/local/share/pkgconfig
-            /usr/lib/pkgconfig
-          key: opencog-deps-${{ runner.os }}-${{ github.sha }}
+          name: opencog-dependencies-${{ runner.os }}
+          path: ${{ github.workspace }}/opencog-install
+        continue-on-error: true
 
-      - name: Rebuild OpenCog dependencies if cache missing
+      - name: Install OpenCog dependencies from artifact or rebuild if missing
         run: |
+          # Install from artifact if available
+          if [ -d "${{ github.workspace }}/opencog-install" ] && [ "$(ls -A ${{ github.workspace }}/opencog-install)" ]; then
+            echo "📦 Installing OpenCog dependencies from artifact..."
+            sudo cp -r ${{ github.workspace }}/opencog-install/* /usr/local/
+            sudo ldconfig
+          fi
+          
           # Check if OpenCog libraries are available
           sudo ldconfig
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -327,7 +341,7 @@ jobs:
           if ! pkg-config --exists cogserver 2>/dev/null; then MISSING=1; fi
           
           if [ $MISSING -eq 1 ]; then
-            echo "🔧 OpenCog dependencies not found in cache - rebuilding from source"
+            echo "🔧 OpenCog dependencies not found in artifact - rebuilding from source"
             
             # Install additional build dependencies
             sudo apt-get install -y valgrind doxygen
@@ -452,19 +466,22 @@ jobs:
             python3-dev \
             python3-pip
 
-      - name: Restore OpenCog dependencies cache
-        uses: actions/cache/restore@v4
+      - name: Download OpenCog dependencies artifact
+        uses: actions/download-artifact@v4
         with:
-          path: |
-            /usr/local/lib
-            /usr/local/include
-            /usr/local/lib/pkgconfig
-            /usr/local/share/pkgconfig
-            /usr/lib/pkgconfig
-          key: opencog-deps-${{ runner.os }}-${{ github.sha }}
+          name: opencog-dependencies-${{ runner.os }}
+          path: ${{ github.workspace }}/opencog-install
+        continue-on-error: true
 
-      - name: Rebuild OpenCog dependencies if cache missing
+      - name: Install OpenCog dependencies from artifact or rebuild if missing
         run: |
+          # Install from artifact if available
+          if [ -d "${{ github.workspace }}/opencog-install" ] && [ "$(ls -A ${{ github.workspace }}/opencog-install)" ]; then
+            echo "📦 Installing OpenCog dependencies from artifact..."
+            sudo cp -r ${{ github.workspace }}/opencog-install/* /usr/local/
+            sudo ldconfig
+          fi
+          
           # Check if OpenCog libraries are available
           sudo ldconfig
           export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
@@ -475,7 +492,7 @@ jobs:
           if ! pkg-config --exists cogserver 2>/dev/null; then MISSING=1; fi
           
           if [ $MISSING -eq 1 ]; then
-            echo "🔧 OpenCog dependencies not found in cache - rebuilding from source"
+            echo "🔧 OpenCog dependencies not found in artifact - rebuilding from source"
             
             # Install additional build dependencies
             sudo apt-get install -y valgrind doxygen
