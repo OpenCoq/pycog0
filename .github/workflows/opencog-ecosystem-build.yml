@@ -93,9 +93,20 @@ jobs:
             /usr/local/lib/opencog
           key: cogutil-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install cogutil
-        working-directory: ${{ github.workspace }}/cogutil/build
+      - name: Build and install cogutil
         run: |
+          # Build cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          else
+            echo "✅ Using cogutil from cache"
+          fi
+          # Install cogutil
+          cd ${{ github.workspace }}/cogutil/build
           sudo make install
           sudo ldconfig
 
@@ -167,10 +178,31 @@ jobs:
             /usr/local/lib/opencog
           key: atomspace-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print AtomSpace Rocks build path for verification
         run: echo "AtomSpace Rocks build path will be:" ${{ github.workspace }}/atomspace-rocks/build
@@ -231,10 +263,31 @@ jobs:
             /usr/local/lib/opencog
           key: atomspace-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print AtomSpace RESTful build path for verification
         run: echo "AtomSpace RESTful build path will be:" ${{ github.workspace }}/atomspace-restful/build
@@ -285,10 +338,31 @@ jobs:
             /usr/local/lib/opencog
           key: atomspace-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print unify build path for verification
         run: echo "Unify build path will be:" /tmp/unify/build
@@ -353,11 +427,44 @@ jobs:
             /usr/local/lib/opencog
           key: unify-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
-          # Unify is already installed via cache
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
+          
+          # Unify is already installed via cache or needs to be built
+          # Check if unify needs to be rebuilt (it's an external repo)
+          if [ ! -f "/usr/local/include/opencog/unify/Unify.h" ]; then
+            echo "🔧 Building unify from source (cache missing or incomplete)"
+            git clone --depth 1 https://github.com/opencog/unify /tmp/unify-build
+            cd /tmp/unify-build
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+            sudo make install
+            sudo ldconfig
+          fi
 
       - name: Print URE build path for verification
         run: echo "URE build path will be:" ${{ github.workspace }}/ure/build
@@ -423,10 +530,31 @@ jobs:
             /usr/local/lib/opencog
           key: atomspace-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print CogServer build path for verification
         run: echo "CogServer build path will be:" ${{ github.workspace }}/cogserver/build
@@ -498,11 +626,43 @@ jobs:
             /usr/local/lib/opencog
           key: cogserver-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/cogserver/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install cogserver from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogserver/build" ] || [ ! -f "${{ github.workspace }}/cogserver/build/Makefile" ]; then
+            echo "🔧 Building cogserver from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogserver
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogserver/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print Attention build path for verification
         run: echo "Attention build path will be:" ${{ github.workspace }}/attention/build
@@ -565,10 +725,31 @@ jobs:
             /usr/local/lib/opencog
           key: atomspace-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print SpaceTime build path for verification
         run: echo "SpaceTime build path will be:" ${{ github.workspace }}/spacetime/build
@@ -896,10 +1077,31 @@ jobs:
             /usr/local/lib/opencog
           key: atomspace-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print LG-Atomese build path for verification
         run: echo "LG-Atomese build path will be:" ${{ github.workspace }}/lg-atomese/build
@@ -971,11 +1173,43 @@ jobs:
             /usr/local/lib/opencog
           key: cogserver-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install dependencies
+      - name: Build and install dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/cogserver/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install cogserver from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogserver/build" ] || [ ! -f "${{ github.workspace }}/cogserver/build/Makefile" ]; then
+            echo "🔧 Building cogserver from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogserver
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogserver/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print Learn build path for verification
         run: echo "Learn build path will be:" ${{ github.workspace }}/learn/build
@@ -1134,14 +1368,79 @@ jobs:
             /usr/local/lib/opencog
           key: unify-${{ runner.os }}-${{ github.sha }}
 
-      - name: Install all dependencies
+      - name: Build and install all dependencies
         run: |
-          cd ${{ github.workspace }}/cogutil/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/atomspace/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/ure/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/cogserver/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/attention/build && sudo make install && sudo ldconfig
-          cd ${{ github.workspace }}/lg-atomese/build && sudo make install && sudo ldconfig
+          # Build and install cogutil from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogutil/build" ] || [ ! -f "${{ github.workspace }}/cogutil/build/Makefile" ]; then
+            echo "🔧 Building cogutil from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogutil/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install atomspace from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/atomspace/build" ] || [ ! -f "${{ github.workspace }}/atomspace/build/Makefile" ]; then
+            echo "🔧 Building atomspace from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/atomspace
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/atomspace/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install ure from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/ure/build" ] || [ ! -f "${{ github.workspace }}/ure/build/Makefile" ]; then
+            echo "🔧 Building ure from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/ure
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/ure/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install cogserver from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/cogserver/build" ] || [ ! -f "${{ github.workspace }}/cogserver/build/Makefile" ]; then
+            echo "🔧 Building cogserver from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/cogserver
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/cogserver/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install attention from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/attention/build" ] || [ ! -f "${{ github.workspace }}/attention/build/Makefile" ]; then
+            echo "🔧 Building attention from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/attention
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/attention/build
+          sudo make install
+          sudo ldconfig
+          
+          # Build and install lg-atomese from source if cache is missing or incomplete
+          if [ ! -d "${{ github.workspace }}/lg-atomese/build" ] || [ ! -f "${{ github.workspace }}/lg-atomese/build/Makefile" ]; then
+            echo "🔧 Building lg-atomese from source (cache missing or incomplete)"
+            cd ${{ github.workspace }}/lg-atomese
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=$CMAKE_BUILD_TYPE -DPYTHON_EXECUTABLE=$(which python3)
+            make $MAKEFLAGS
+          fi
+          cd ${{ github.workspace }}/lg-atomese/build
+          sudo make install
+          sudo ldconfig
 
       - name: Print OpenCog Integration build path for verification
         run: echo "OpenCog Integration build path will be:" ${{ github.workspace }}/opencog/build

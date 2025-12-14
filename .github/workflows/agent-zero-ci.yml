@@ -168,6 +168,65 @@ jobs:
             /usr/lib/pkgconfig
           key: opencog-deps-${{ runner.os }}-${{ github.sha }}
 
+      - name: Rebuild OpenCog dependencies if cache missing
+        run: |
+          # Check if OpenCog libraries are available
+          sudo ldconfig
+          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+          
+          MISSING=0
+          if ! pkg-config --exists cogutil 2>/dev/null; then MISSING=1; fi
+          if ! pkg-config --exists atomspace 2>/dev/null; then MISSING=1; fi
+          if ! pkg-config --exists cogserver 2>/dev/null; then MISSING=1; fi
+          
+          if [ $MISSING -eq 1 ]; then
+            echo "🔧 OpenCog dependencies not found in cache - rebuilding from source"
+            
+            # Install additional build dependencies
+            sudo apt-get install -y valgrind doxygen
+            
+            # Build cogutil
+            echo "Building cogutil..."
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            # Build atomspace
+            echo "Building atomspace..."
+            cd ${{ github.workspace }}/atomspace
+            if [ ! -d "lib" ]; then
+              mkdir -p lib
+              echo "# Empty lib directory for build compatibility" > lib/CMakeLists.txt
+            fi
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            # Build cogserver
+            echo "Building cogserver..."
+            cd ${{ github.workspace }}/cogserver
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            echo "✅ OpenCog dependencies rebuilt successfully"
+          else
+            echo "✅ OpenCog dependencies found in cache"
+          fi
+          
+          # Verify installation
+          echo "Verifying OpenCog installation..."
+          pkg-config --modversion cogutil || echo "Warning: cogutil not found"
+          pkg-config --modversion atomspace || echo "Warning: atomspace not found"
+          pkg-config --modversion cogserver || echo "Warning: cogserver not found"
+
       - name: Setup pkg-config environment
         run: |
           sudo ldconfig
@@ -255,6 +314,65 @@ jobs:
             /usr/local/share/pkgconfig
             /usr/lib/pkgconfig
           key: opencog-deps-${{ runner.os }}-${{ github.sha }}
+
+      - name: Rebuild OpenCog dependencies if cache missing
+        run: |
+          # Check if OpenCog libraries are available
+          sudo ldconfig
+          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+          
+          MISSING=0
+          if ! pkg-config --exists cogutil 2>/dev/null; then MISSING=1; fi
+          if ! pkg-config --exists atomspace 2>/dev/null; then MISSING=1; fi
+          if ! pkg-config --exists cogserver 2>/dev/null; then MISSING=1; fi
+          
+          if [ $MISSING -eq 1 ]; then
+            echo "🔧 OpenCog dependencies not found in cache - rebuilding from source"
+            
+            # Install additional build dependencies
+            sudo apt-get install -y valgrind doxygen
+            
+            # Build cogutil
+            echo "Building cogutil..."
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            # Build atomspace
+            echo "Building atomspace..."
+            cd ${{ github.workspace }}/atomspace
+            if [ ! -d "lib" ]; then
+              mkdir -p lib
+              echo "# Empty lib directory for build compatibility" > lib/CMakeLists.txt
+            fi
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            # Build cogserver
+            echo "Building cogserver..."
+            cd ${{ github.workspace }}/cogserver
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            echo "✅ OpenCog dependencies rebuilt successfully"
+          else
+            echo "✅ OpenCog dependencies found in cache"
+          fi
+          
+          # Verify installation
+          echo "Verifying OpenCog installation..."
+          pkg-config --modversion cogutil || echo "Warning: cogutil not found"
+          pkg-config --modversion atomspace || echo "Warning: atomspace not found"
+          pkg-config --modversion cogserver || echo "Warning: cogserver not found"
 
       - name: Setup pkg-config environment
         run: |
@@ -344,6 +462,65 @@ jobs:
             /usr/local/share/pkgconfig
             /usr/lib/pkgconfig
           key: opencog-deps-${{ runner.os }}-${{ github.sha }}
+
+      - name: Rebuild OpenCog dependencies if cache missing
+        run: |
+          # Check if OpenCog libraries are available
+          sudo ldconfig
+          export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:/usr/local/share/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH
+          
+          MISSING=0
+          if ! pkg-config --exists cogutil 2>/dev/null; then MISSING=1; fi
+          if ! pkg-config --exists atomspace 2>/dev/null; then MISSING=1; fi
+          if ! pkg-config --exists cogserver 2>/dev/null; then MISSING=1; fi
+          
+          if [ $MISSING -eq 1 ]; then
+            echo "🔧 OpenCog dependencies not found in cache - rebuilding from source"
+            
+            # Install additional build dependencies
+            sudo apt-get install -y valgrind doxygen
+            
+            # Build cogutil
+            echo "Building cogutil..."
+            cd ${{ github.workspace }}/cogutil
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            # Build atomspace
+            echo "Building atomspace..."
+            cd ${{ github.workspace }}/atomspace
+            if [ ! -d "lib" ]; then
+              mkdir -p lib
+              echo "# Empty lib directory for build compatibility" > lib/CMakeLists.txt
+            fi
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            # Build cogserver
+            echo "Building cogserver..."
+            cd ${{ github.workspace }}/cogserver
+            mkdir -p build && cd build
+            cmake .. -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }}
+            make -j$(nproc)
+            sudo make install
+            sudo ldconfig
+            
+            echo "✅ OpenCog dependencies rebuilt successfully"
+          else
+            echo "✅ OpenCog dependencies found in cache"
+          fi
+          
+          # Verify installation
+          echo "Verifying OpenCog installation..."
+          pkg-config --modversion cogutil || echo "Warning: cogutil not found"
+          pkg-config --modversion atomspace || echo "Warning: atomspace not found"
+          pkg-config --modversion cogserver || echo "Warning: cogserver not found"
 
       - name: Setup pkg-config environment
         run: |
